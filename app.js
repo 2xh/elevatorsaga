@@ -1,14 +1,16 @@
 
-var createEditor = function() {
+document.addEventListener("DOMContentLoaded", function() {
+    var $ = function(selectors){return document.querySelector(selectors)};
+    var createEditor = function() {
     var lsKey = "elevatorCrushCode_v5";
 
     var cm = CodeMirror.fromTextArea(document.getElementById("code"), {
         lineNumbers: true,
         indentUnit: 4,
         indentWithTabs: false,
-        theme: "solarized light",
         mode: "javascript",
         autoCloseBrackets: true,
+        matchBrackets: true,
         extraKeys: {
             // the following Tab key mapping is from http://codemirror.net/doc/manual.html#keymaps
             Tab: function(cm) {
@@ -39,11 +41,11 @@ var createEditor = function() {
     });
 
     var reset = function() {
-        cm.setValue($("#default-elev-implementation").text().trim());
+        cm.setValue($("#default-elev-implementation").textContent.trim());
     };
     var saveCode = function() {
         localStorage.setItem(lsKey, cm.getValue());
-        $("#save_message").text("Code saved " + new Date().toTimeString());
+        $("#save_message").textContent = "Code saved " + new Date().toTimeString();
         returnObj.trigger("change");
     };
 
@@ -54,22 +56,23 @@ var createEditor = function() {
         reset();
     }
 
-    $("#button_save").click(function() {
+    $("#button_save").addEventListener("click", function() {
         saveCode();
         cm.focus();
     });
 
-    $("#button_reset").click(function() {
+    $("#button_reset").addEventListener("click", function() {
         if(confirm("Do you really want to reset to the default implementation?")) {
-            localStorage.setItem("develevateBackupCode", cm.getValue());
+            sessionStorage.setItem("develevateBackupCode", cm.getValue());
             reset();
         }
         cm.focus();
     });
 
-    $("#button_resetundo").click(function() {
-        if(confirm("Do you want to bring back the code as before the last reset?")) {
-            cm.setValue(localStorage.getItem("develevateBackupCode") || "");
+    $("#button_resetundo").addEventListener("click", function() {
+        var code = sessionStorage.getItem("develevateBackupCode");
+        if(code && confirm("Do you want to bring back the code as before the last reset?")) {
+            cm.setValue(code);
         }
         cm.focus();
     });
@@ -100,25 +103,22 @@ var createEditor = function() {
         return cm.getValue();
     }
     returnObj.setDevTestCode = function() {
-        cm.setValue($("#devtest-elev-implementation").text().trim());
+        cm.setValue($("#devtest-elev-implementation").textContent.trim());
     }
 
-    $("#button_apply").click(function() {
+    $("#button_apply").addEventListener("click", function() {
         returnObj.trigger("apply_code");
     });
     return returnObj;
-};
+    };
 
 
-var createParamsUrl = function(current, overrides) {
+    var createParamsUrl = function(current, overrides) {
     return "#" + _.map(_.merge(current, overrides), function(val, key) {
         return key + "=" + val;
     }).join(",");
-};
+    };
 
-
-
-$(function() {
     var tsKey = "elevatorTimeScale";
     var editor = createEditor();
 
@@ -215,7 +215,8 @@ $(function() {
         //     } else {
         //         message = "Could not compute fitness due to error: " + results.error;
         //     }
-        //     $("#fitness_message").html(message).removeClass("faded");
+        //     $("#fitness_message").innerHTML = message;
+        //     $("#fitness_message").removeClass("faded");
         // });
     });
     editor.trigger("change");
@@ -249,4 +250,4 @@ $(function() {
         app.worldController.setTimeScale(timeScale);
         app.startChallenge(requestedChallenge, autoStart);
     });
-});
+}, true);

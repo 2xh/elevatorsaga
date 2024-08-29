@@ -4,25 +4,16 @@
     <title>Elevator Saga performance tests</title>
     <meta charset="UTF-8">
 
-    <style>
-        body { font-family: Arial, Helvetica, sans-serif;}
-    </style>
+    <script type="text/javascript" src="libs/lodash.min.js"></script>
+    <script type="text/javascript" src="libs/riot.min.js"></script>
 
-    <script type="text/javascript" src="../libs/jquery-2.1.1.min.js"></script>
-    <script type="text/javascript" src="../libs/lodash.min.js"></script>
-    <script type="text/javascript" src="../libs/riot.js"></script>
+    <script type="text/javascript" src="libs/unobservable.js"></script>
 
-    <script type="text/javascript" src="../libs/unobservable.js"></script>
-
-    <script type="text/javascript" src="../base.js"></script>
-    <script type="text/javascript" src="../movable.js"></script>
-    <script type="text/javascript" src="../floor.js"></script>
-    <script type="text/javascript" src="../user.js"></script>
-    <script type="text/javascript" src="../elevator.js"></script>
-    <script type="text/javascript" src="../interfaces.js"></script>
-    <script type="text/javascript" src="../world.js"></script>
-    <script type="text/javascript" src="../presenters.js"></script>
-    <script type="text/javascript" src="../challenges.js"></script>
+    <script type="text/javascript" src="base.js"></script>
+    <script type="text/javascript" src="movable.js"></script>
+    <script type="text/javascript" src="floor.js"></script>
+    <script type="text/javascript" src="user.js"></script>
+    <script type="text/javascript" src="elevator.js"></script>
 </head>
 <body>
     <h3>Movable</h3>
@@ -66,8 +57,9 @@
         // First blow through the allocation system to make first test more predictable..
         for(var i=1000; i>0; i--) {
             var m = new Movable();
-            var e = new Elevator(1.5, 4, 40);
-            var u = new User(10, 10, 40);
+            var e = new Elevator(1.5, 40, 50);
+            var u = new User(80);
+            var f = new Floor({}, 0, 0);
         }
 
         var measure = function(name, numIterations, fn) {
@@ -76,13 +68,13 @@
                 fn();
             }
             var t1 = now();
-            var report = name + " " + numIterations * 0.001 + "k times: " + (t1 - t0).toFixed(3) + " ms";
+            var report = name + " " + numIterations * 0.000001 + "M times: " + (t1 - t0).toFixed(3) + " ms";
             return report;
         };
 
-        $("#results_movable h4").append(measure("Creation", 10000, function() { var m = new Movable() }));
-        $("#results_elevator h4").append(measure("Creation", 10000, function() { var e = new Elevator(1.5, 4, 40) }));
-        $("#results_user h4").append(measure("Creation", 10000, function() { var u = new User(10, 10, 40) }));
-
+        document.querySelector("#results_movable h4").innerHTML = measure("Creation", 1000000, function() { var m = new Movable() });
+        document.querySelector("#results_elevator h4").innerHTML = measure("Creation", 1000000, function() { var e = new Elevator(1.5, 40, 50) });
+        document.querySelector("#results_user h4").innerHTML = measure("Creation", 1000000, function() { var u = new User(10, 10, 40) });
+        document.querySelector("#results_floor h4").innerHTML = measure("Creation", 1000000, function() { var u = new Floor({}, 0, 0) });
     </script>
 </body>

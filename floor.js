@@ -1,10 +1,10 @@
 
-var asFloor = function(obj, floorLevel, yPosition, errorHandler) {
+function Floor(obj, floorLevel, yPosition, errorHandler) {
     var floor = riot.observable(obj);
 
     floor.level = floorLevel;
     floor.yPosition = yPosition;
-    floor.buttonStates = {up: "", down: ""};
+    floor.buttonStates = [false, false];
 
     // TODO: Ideally the floor should have a facade where tryTrigger is done
     var tryTrigger = function(event, arg1, arg2, arg3, arg4) {
@@ -13,41 +13,34 @@ var asFloor = function(obj, floorLevel, yPosition, errorHandler) {
         } catch(e) { errorHandler(e); }
     };
 
-    floor.pressUpButton = function() {
-        var prev = floor.buttonStates.up;
-        floor.buttonStates.up = "activated";
-        if(prev !== floor.buttonStates.up) {
-            tryTrigger("buttonstate_change", floor.buttonStates);
-            tryTrigger("up_button_pressed", floor);
+    floor.pressButton = function(button) {
+        if(button > 0) {
+            button = 0;
+        } else if(button < 0) {
+            button = 1;
+        } else {
+            return;
         }
-    };
-
-    floor.pressDownButton = function() {
-        var prev = floor.buttonStates.down;
-        floor.buttonStates.down = "activated";
-        if(prev !== floor.buttonStates.down) {
+        if(!floor.buttonStates[button]) {
+            floor.buttonStates[button] = true;
             tryTrigger("buttonstate_change", floor.buttonStates);
-            tryTrigger("down_button_pressed", floor);
+            tryTrigger(button === 0 ? "up_button_pressed" : "down_button_pressed", floor);
         }
     };
 
     floor.elevatorAvailable = function(elevator) {
-        if(elevator.goingUpIndicator && floor.buttonStates.up) {
-            floor.buttonStates.up = "";
+        if(elevator.directionalIndicators[0] && floor.buttonStates[0]) {
+            floor.buttonStates[0] = false;
             tryTrigger("buttonstate_change", floor.buttonStates);
         }
-        if(elevator.goingDownIndicator && floor.buttonStates.down) {
-            floor.buttonStates.down = "";
+        if(elevator.directionalIndicators[1] && floor.buttonStates[1]) {
+            floor.buttonStates[1] = false;
             tryTrigger("buttonstate_change", floor.buttonStates);
         }
     };
 
     floor.getSpawnPosY = function() {
         return floor.yPosition + 30;
-    };
-
-    floor.floorNum = function() {
-        return floor.level;
     };
 
     return floor;

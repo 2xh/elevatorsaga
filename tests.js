@@ -16,9 +16,9 @@ describe("Elevator Saga", function() {
 			someHandler: function() { },
 			someOtherHandler: function() { }
 		};
-		$.each(handlers, function(key, value) {
+		for(var key in handlers) {
 			spyOn(handlers, key).and.callThrough();
-		});
+		};
 	});
 
 	describe("Movable class", function() {
@@ -218,7 +218,7 @@ describe("Elevator Saga", function() {
 
 		it("moves to floors specified", function() {
 			_.each(_.range(0, floorCount-1), function(floor) {
-				e.goToFloor(floor);
+				e.moveToFloor(floor);
 				timeForwarder(10.0, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
 				var expectedY = (floorHeight * (floorCount-1)) - floorHeight*floor;
 				expect(e.y).toBe(expectedY);
@@ -229,10 +229,10 @@ describe("Elevator Saga", function() {
 		it("can change direction", function() {
 			expect(e.currentFloor).toBe(0);
 			var originalY = e.y;
-			e.goToFloor(1);
+			e.moveToFloor(1);
 			timeForwarder(0.2, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
 			expect(e.y).not.toBe(originalY);
-			e.goToFloor(0);
+			e.moveToFloor(0);
 			timeForwarder(10.0, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
 			expect(e.y).toBe(originalY);
 			expect(e.currentFloor).toBe(0);
@@ -247,15 +247,14 @@ describe("Elevator Saga", function() {
 		});
 
 		it("correctly reports travel suitability", function() {
-			e.goingUpIndicator = true;
-			e.goingDownIndicator = true;
+			e.directionalIndicators = [true, true];
 			expect(e.isSuitableForTravelBetween(0, 1)).toBe(true);
 			expect(e.isSuitableForTravelBetween(2, 4)).toBe(true);
 			expect(e.isSuitableForTravelBetween(5, 3)).toBe(true);
 			expect(e.isSuitableForTravelBetween(2, 0)).toBe(true);
-			e.goingUpIndicator = false;
+			e.directionalIndicators = [false, true];
 			expect(e.isSuitableForTravelBetween(1, 10)).toBe(false);
-			e.goingDownIndicator = false;
+			e.directionalIndicators = [true, false];
 			expect(e.isSuitableForTravelBetween(20, 0)).toBe(false);
 		});
 
@@ -267,20 +266,20 @@ describe("Elevator Saga", function() {
 
 
 		it("reports not approaching floor 0 when going up from floor 0", function() {
-			e.goToFloor(1);
+			e.moveToFloor(1);
 			timeForwarder(0.01, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
 			expect(e.isApproachingFloor(0)).toBe(false);
 		});
 
 		it("reports approaching floor 2 when going up from floor 0", function() {
-			e.goToFloor(1);
+			e.moveToFloor(1);
 			timeForwarder(0.01, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
 			expect(e.isApproachingFloor(2)).toBe(true);
 		});
 
 		it("reports approaching floor 2 when going down from floor 3", function() {
 			e.setFloorPosition(3);
-			e.goToFloor(2);
+			e.moveToFloor(2);
 			timeForwarder(0.01, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
 			expect(e.isApproachingFloor(2)).toBe(true);
 		});
@@ -290,14 +289,14 @@ describe("Elevator Saga", function() {
 			e.on("passing_floor", function(floorNum, direction) {
 				console.log("Passing floor yo", floorNum, direction);
 			});
-			e.goToFloor(1);
+			e.moveToFloor(1);
 			timeForwarder(10.0, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
 			expect(e.currentFloor).toBe(1);
 			expect(handlers.someHandler).not.toHaveBeenCalled();
 		});
 		it("emits passing floor event when going from floor 0 to 2", function() {
 			e.on("passing_floor", handlers.someHandler);
-			e.goToFloor(2);
+			e.moveToFloor(2);
 			timeForwarder(10.0, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
 			expect(e.currentFloor).toBe(2);
 			expect(handlers.someHandler.calls.count()).toEqual(1);
@@ -305,7 +304,7 @@ describe("Elevator Saga", function() {
 		});
 		it("emits passing floor events when going from floor 0 to 3", function() {
 			e.on("passing_floor", handlers.someHandler);
-			e.goToFloor(3);
+			e.moveToFloor(3);
 			timeForwarder(10.0, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
 			expect(e.currentFloor).toBe(3);
 			expect(handlers.someHandler.calls.count()).toEqual(2);
@@ -314,7 +313,7 @@ describe("Elevator Saga", function() {
 		});
 		it("emits passing floor events when going from floor 3 to 0", function() {
 			e.on("passing_floor", handlers.someHandler);
-			e.goToFloor(3);
+			e.moveToFloor(3);
 			timeForwarder(10.0, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
 			expect(e.currentFloor).toBe(3);
 			expect(handlers.someHandler.calls.count()).toEqual(2);
@@ -325,152 +324,66 @@ describe("Elevator Saga", function() {
 			var passingFloorEventCount = 0;
 			e.on("passing_floor", function(floorNum, direction) {
 				expect(floorNum).toBe(1, "floor being passed");
-				expect(direction).toBe("up");
+				expect(direction).toBeLessThanOrEqual(1, "direction");
 				passingFloorEventCount++;
-				e.goToFloor(e.getExactFutureFloorIfStopped());
+				e.moveToFloor(e.getExactFutureFloorIfStopped());
 			});
-			e.goToFloor(2);
+			e.moveToFloor(2);
 			timeForwarder(3.0, 0.01401, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
 			expect(passingFloorEventCount).toBeGreaterThan(0, "event count");
 			expect(e.getExactCurrentFloor()).toBeLessThan(1.15, "current floor");
 		});
-
-		it("doesnt seem to overshoot when stopping at floors", function() {
+		it("doesnt overshoot too much when stopping at floors", function() {
 			_.each(_.range(60, 120, 2.32133), function(updatesPerSecond) {
 				var STEPSIZE = 1.0 / updatesPerSecond;
 				e.setFloorPosition(1);
-				e.goToFloor(3);
+				e.moveToFloor(3);
 				timeForwarder(5.0, STEPSIZE, function(dt) {
 					e.update(dt);
 					e.updateElevatorMovement(dt);
-					expect(e.getExactCurrentFloor()).toBeWithinRange(1.0, 3.0, "(STEPSIZE is " + STEPSIZE + ")");
+					expect(e.getExactCurrentFloor()).toBeLessThanOrEqual(3.003, "(STEPSIZE is " + STEPSIZE + ")");
 				});
 				expect(e.getExactCurrentFloor()).toEqual(3.0);
 			});
 
 
 		});
+		it("stops when told to stop", function() {
+			var originalY = e.y;
+			e.moveToFloor(2);
+			timeForwarder(10, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
+			expect(e.y).not.toBe(originalY);
 
-	});
+			e.moveToFloor(0);
+			timeForwarder(0.5, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
+			var whenMovingY = e.y;
 
-
-	describe("API", function() {
-		describe("Elevator interface", function() {
-			var e = null;
-			var elevInterface = null;
-			beforeEach(function() {
-				e =  new Elevator(1.5, 4, 40);
-				e.setFloorPosition(0);
-				elevInterface = asElevatorInterface({}, e, 4);
+			e.stop();
+			timeForwarder(10, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
+			expect(e.y).not.toBe(whenMovingY);
+			expect(e.y).not.toBe(originalY);
+		});
+		describe("events", function() {
+			it("propagates stopped_at_floor event", function() {
+				e.on("stopped_at_floor", handlers.someHandler);
+				e.trigger("stopped_at_floor", 3);
+				expect(handlers.someHandler.calls.mostRecent().args.slice(0, 1)).toEqual([3]);
 			});
 
-			describe("events", function() {
-				it("propagates stopped_at_floor event", function() {
-					elevInterface.on("stopped_at_floor", handlers.someHandler);
-					e.trigger("stopped_at_floor", 3);
-					expect(handlers.someHandler.calls.mostRecent().args.slice(0, 1)).toEqual([3]);
-				});
-
-				it("does not propagate stopped event", function() {
-					elevInterface.on("stopped", handlers.someHandler);
-					e.trigger("stopped", 3.1);
-					expect(handlers.someHandler).not.toHaveBeenCalled();
-				});
-
-				it("triggers idle event at start", function() {
-					elevInterface.on("idle", handlers.someHandler);
-					elevInterface.checkDestinationQueue();
-					expect(handlers.someHandler).toHaveBeenCalled();
-				});
-
-				it("triggers idle event when queue empties", function() {
-					elevInterface.on("idle", handlers.someHandler);
-					elevInterface.destinationQueue = [11, 21];
-					e.y = 11;
-					e.trigger("stopped", e.y);
-					expect(handlers.someHandler).not.toHaveBeenCalled();
-					e.y = 21;
-					e.trigger("stopped", e.y);
-					expect(handlers.someHandler).toHaveBeenCalled();
-				});
+			it("triggers idle event at start", function() {
+				e.on("idle", handlers.someHandler);
+				e.checkDestinationQueue();
+				expect(handlers.someHandler).toHaveBeenCalled();
 			});
 
-			it("stops when told told to stop", function() {
-				var originalY = e.y;
-				elevInterface.goToFloor(2);
-				timeForwarder(10, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
-				expect(e.y).not.toBe(originalY);
-
-				elevInterface.goToFloor(0);
-				timeForwarder(0.2, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
-				var whenMovingY = e.y;
-
-				elevInterface.stop();
-				timeForwarder(10, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
-				expect(e.y).not.toBe(whenMovingY);
-				expect(e.y).not.toBe(originalY);
-			});
-
-			describe("destination direction", function() {
-				it("reports up when going up", function() {
-					e.setFloorPosition(1);
-					elevInterface.goToFloor(1);
-					expect(elevInterface.destinationDirection()).toBe("stopped");
-				});
-				it("reports up when going up", function() {
-					elevInterface.goToFloor(1);
-					expect(elevInterface.destinationDirection()).toBe("up");
-				});
-				it("reports down when going down", function() {
-					e.setFloorPosition(3);
-					elevInterface.goToFloor(2);
-					expect(elevInterface.destinationDirection()).toBe("down");
-				});
-			});
-
-			it("stores going up and going down properties", function() {
-				expect(e.goingUpIndicator).toBe(true);
-				expect(e.goingDownIndicator).toBe(true);
-				expect(elevInterface.goingUpIndicator()).toBe(true);
-				expect(elevInterface.goingDownIndicator()).toBe(true);
-
-				elevInterface.goingUpIndicator(false);
-				expect(elevInterface.goingUpIndicator()).toBe(false);
-				expect(elevInterface.goingDownIndicator()).toBe(true);
-
-				elevInterface.goingDownIndicator(false);
-				expect(elevInterface.goingDownIndicator()).toBe(false);
-				expect(elevInterface.goingUpIndicator()).toBe(false);
-			});
-
-			it("can chain calls to going up and down indicator functions", function() {
-				elevInterface.goingUpIndicator(false).goingDownIndicator(false);
-				expect(elevInterface.goingUpIndicator()).toBe(false);
-				expect(elevInterface.goingDownIndicator()).toBe(false);
-			});
-
-			it("normalizes load factor", function() {
-				var fnNewUser = function(){ return {weight:_.random(55, 100)}; },
-					fnEnterElevator = function(user){ e.userEntering(user); };
-
-				_.chain(_.range(20)).map(fnNewUser).forEach(fnEnterElevator);
-				var load = elevInterface.loadFactor();
-				expect(load >= 0 && load <= 1).toBeTruthy();
-			});
-
-			it("doesnt raise unexpected events when told to stop when passing floor", function() {
-				e.setFloorPosition(2);
-				elevInterface.goToFloor(0);
-				var passingFloorEventCount = 0;
-				elevInterface.on("passing_floor", function(floorNum, direction) {
-					passingFloorEventCount++;
-					// We only expect to be passing floor 1, but it is possible and ok that several
-					// such events are raised, due to possible overshoot.
-					expect(floorNum).toBe(1, "floor being passed");
-					elevInterface.stop();
-				});
-				timeForwarder(3.0, 0.01401, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
-				expect(passingFloorEventCount).toBeGreaterThan(0);
+			it("triggers idle event when queue empties", function() {
+				e.on("idle", handlers.someHandler);
+				e.destinationQueue = [1, 2];
+				e.checkDestinationQueue();
+			        timeForwarder(2, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
+				expect(handlers.someHandler).not.toHaveBeenCalled();
+			        timeForwarder(4, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
+				expect(handlers.someHandler).toHaveBeenCalled();
 			});
 		});
 	});

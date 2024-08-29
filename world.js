@@ -7,53 +7,59 @@ var createWorldCreator = function() {
     creator.createFloors = function(floorCount, floorHeight, errorHandler) {
         var floors = _.map(_.range(floorCount), function(e, i) {
             var yPos = (floorCount - 1 - i) * floorHeight;
-            var floor = asFloor({}, i, yPos, errorHandler);
+            var floor = Floor({}, i, yPos, errorHandler);
             return floor;
         });
         return floors;
     };
-    creator.createElevators = function(elevatorCount, floorCount, floorHeight, elevatorCapacities) {
-        elevatorCapacities = elevatorCapacities || [4];
-        var currentX = 200.0;
+    creator.createElevators = function(elevatorCount, floorCount, floorHeight, elevatorCapacities, elevatorSpeeds, startFloors, errorHandler) {
+        elevatorCapacities = elevatorCapacities || [6];
+        elevatorSpeeds = elevatorSpeeds || [3];
+        startFloors = startFloors || [0];
+        var currentX = 150.0;
         var elevators = _.map(_.range(elevatorCount), function(e, i) {
-            var elevator = new Elevator(2.6, floorCount, floorHeight, elevatorCapacities[i%elevatorCapacities.length]);
+            var elevator = new Elevator(elevatorSpeeds[i%elevatorSpeeds.length], floorCount, floorHeight, elevatorCapacities[i%elevatorCapacities.length], errorHandler);
 
             // Move to right x position
             elevator.moveTo(currentX, null);
-            elevator.setFloorPosition(0);
+            elevator.setFloorPosition(startFloors[i%startFloors.length]);
             elevator.updateDisplayPosition();
-            currentX += (20 + elevator.width);
+            currentX += (10 + elevator.width);
             return elevator;
         });
         return elevators;
     };
 
     creator.createRandomUser = function() {
-        var weight = _.random(55, 100);
-        var user = new User(weight);
-        if(_.random(40) === 0) {
+        var user;
+        if(_.random(20) === 0) {
+            user = new User(_.random(35, 60));
             user.displayType = "child";
         } else if(_.random(1) === 0) {
+            user = new User(_.random(45, 75));
             user.displayType = "female";
         } else {
+            user = new User(_.random(60, 100));
             user.displayType = "male";
         }
         return user;
     };
 
-    creator.spawnUserRandomly = function(floorCount, floorHeight, floors) {
+    creator.spawnUserRandomly = function(floorCount, floorHeight, floors, lobbyPossibility) {
+        if(lobbyPossibility == undefined) {
+            lobbyPossibility = 0.5;
+        }
         var user = creator.createRandomUser();
-        user.moveTo(105+_.random(40), 0);
-        var currentFloor = _.random(1) === 0 ? 0 : _.random(floorCount - 1);
+        user.moveTo(80+_.random(40), 0);
+        var currentFloor = Math.random() < lobbyPossibility ? 0 : _.random(1, floorCount - 1);
         var destinationFloor;
         if(currentFloor === 0) {
             // Definitely going up
             destinationFloor = _.random(1, floorCount - 1);
         } else {
             // Usually going down, but sometimes not
-            if(_.random(10) === 0) {
-                destinationFloor = (currentFloor + _.random(1, floorCount - 1)) % floorCount;
-            } else {
+            destinationFloor = Math.random() < lobbyPossibility ? 0 : _.random(1, floorCount - 1);
+            if(destinationFloor === currentFloor) {
                 destinationFloor = 0;
             }
         }
@@ -73,8 +79,7 @@ var createWorldCreator = function() {
         }
 
         world.floors = creator.createFloors(options.floorCount, world.floorHeight, handleUserCodeError);
-        world.elevators = creator.createElevators(options.elevatorCount, options.floorCount, world.floorHeight, options.elevatorCapacities);
-        world.elevatorInterfaces = _.map(world.elevators, function(e) { return asElevatorInterface({}, e, options.floorCount, handleUserCodeError); });
+        world.elevators = creator.createElevators(options.elevatorCount, options.floorCount, world.floorHeight, options.elevatorCapacities, options.elevatorSpeeds, options.startFloors, handleUserCodeError);
         world.users = [];
         world.transportedCounter = 0;
         world.transportedPerSec = 0.0;
@@ -129,18 +134,16 @@ var createWorldCreator = function() {
         }
 
         var handleButtonRepressing = function(eventName, floor) {
-            // Need randomize iteration order or we'll tend to fill upp first elevator
-            for(var i=0, len=world.elevators.length, offset=_.random(len-1); i < len; ++i) {
-                var elevIndex = (i + offset) % len;
-                var elevator = world.elevators[elevIndex];
-                if( eventName === "up_button_pressed" && elevator.goingUpIndicator ||
-                    eventName === "down_button_pressed" && elevator.goingDownIndicator) {
+            for(var i=0, len=world.elevators.length; i < len; ++i) {
+                var elevator = world.elevators[i];
+                if( eventName === "up_button_pressed" && elevator.directionalIndicators[0] ||
+                    eventName === "down_button_pressed" && elevator.directionalIndicators[1]) {
 
                     // Elevator is heading in correct direction, check for suitability
                     if(elevator.currentFloor === floor.level && elevator.isOnAFloor() && !elevator.isMoving && !elevator.isFull()) {
                         // Potentially suitable to get into
                         // Use the interface queue functionality to queue up this action
-                        world.elevatorInterfaces[elevIndex].goToFloor(floor.level, true);
+                        elevator.goToFloor(floor.level);
                         return;
                     }
                 }
@@ -163,14 +166,16 @@ var createWorldCreator = function() {
             elapsedSinceStatsUpdate += dt;
             while(elapsedSinceSpawn > 1.0/options.spawnRate) {
                 elapsedSinceSpawn -= 1.0/options.spawnRate;
-                registerUser(creator.spawnUserRandomly(options.floorCount, world.floorHeight, world.floors));
+                registerUser(creator.spawnUserRandomly(options.floorCount, world.floorHeight, world.floors, options.lobbyPossibility));
             }
 
             // Use regular for loops for performance and memory friendlyness
             for(var i=0, len=world.elevators.length; i < len; ++i) {
                 var e = world.elevators[i];
                 e.update(dt);
-                e.updateElevatorMovement(dt);
+                if(e.isMoving) {
+                    e.updateElevatorMovement(dt);
+                }
             }
             for(var users=world.users, i=0, len=users.length; i < len; ++i) {
                 var u = users[i];
@@ -200,17 +205,17 @@ var createWorldCreator = function() {
 
         world.unWind = function() {
             console.log("Unwinding", world);
-            _.each(world.elevators.concat(world.elevatorInterfaces).concat(world.users).concat(world.floors).concat([world]), function(obj) {
+            _.each(world.elevators.concat(world.users).concat(world.floors).push(world), function(obj) {
                 obj.off("*");
             });
             world.challengeEnded = true;
-            world.elevators = world.elevatorInterfaces = world.users = world.floors = [];
+            world.elevators = world.users = world.floors = [];
         };
 
         world.init = function() {
             // Checking the floor queue of the elevators triggers the idle event here
-            for(var i=0; i < world.elevatorInterfaces.length; ++i) {
-                world.elevatorInterfaces[i].checkDestinationQueue();
+            for(var i=0; i < world.elevators.length; ++i) {
+                world.elevators[i].checkDestinationQueue();
             }
         };
 
@@ -236,21 +241,21 @@ var createWorldController = function(dtMax) {
                     firstUpdate = false;
                     // This logic prevents infite loops in usercode from breaking the page permanently - don't evaluate user code until game is unpaused.
                     try {
-                        codeObj.init(world.elevatorInterfaces, world.floors);
+                        codeObj.init(world.elevators, world.floors);
                         world.init();
                     } catch(e) { controller.handleUserCodeError(e); }
                 }
 
                 var dt = (t - lastT);
                 var scaledDt = dt * 0.001 * controller.timeScale;
-                scaledDt = Math.min(scaledDt, dtMax * 3 * controller.timeScale); // Limit to prevent unhealthy substepping
+                scaledDt = Math.min(scaledDt, dtMax * 3600 * controller.timeScale); // Limit to prevent unhealthy substepping
                 try {
-                    codeObj.update(scaledDt, world.elevatorInterfaces, world.floors);
+                    codeObj.update(scaledDt, world.elevators, world.floors);
                 } catch(e) { controller.handleUserCodeError(e); }
                 while(scaledDt > 0.0 && !world.challengeEnded) {
                     var thisDt = Math.min(dtMax, scaledDt);
                     world.update(thisDt);
-                    scaledDt -= dtMax;
+                    scaledDt -= thisDt;
                 }
                 world.updateDisplayPositions();
                 world.trigger("stats_display_changed"); // TODO: Trigger less often for performance reasons etc

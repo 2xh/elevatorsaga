@@ -20,11 +20,7 @@ User.prototype.appearOnFloor = function(floor, destinationFloorNum) {
 };
 
 User.prototype.pressFloorButton = function(floor) {
-    if(this.destinationFloor < this.currentFloor) {
-        floor.pressDownButton();
-    } else {
-        floor.pressUpButton();
-    }
+    floor.pressButton(this.destinationFloor - this.currentFloor);
 };
 
 User.prototype.handleExit = function(floorNum, elevator) {
@@ -38,7 +34,7 @@ User.prototype.handleExit = function(floorNum, elevator) {
         this.trigger("new_state");
         this.trigger("new_display_state");
         var self = this;
-        this.moveToOverTime(destination, null, 1 + Math.random()*0.5, linearInterpolate, function lastMove() {
+        this.moveToOverTime(destination, null, 1 + Math.random()*0.5, Math.linearInterpolate, function lastMove() {
             self.removeMe = true;
             self.trigger("removed");
             self.off("*");

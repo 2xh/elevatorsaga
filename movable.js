@@ -1,16 +1,14 @@
 
-var EPSILON = 0.00001;
-
-var linearInterpolate = function(value0, value1, x) {
+Math.linearInterpolate = function(value0, value1, x) {
     return value0 + (value1 - value0) * x;
 };
-var powInterpolate = function(value0, value1, x, a) {
+Math.powInterpolate = function(value0, value1, x, a) {
     return value0 + (value1 - value0) * Math.pow(x, a) / (Math.pow(x, a) + Math.pow(1-x, a));
 };
-var coolInterpolate = function(value0, value1, x) {
-    return powInterpolate(value0, value1, x, 1.3);
+Math.coolInterpolate = function(value0, value1, x) {
+    return Math.powInterpolate(value0, value1, x, 1.3);
 };
-var DEFAULT_INTERPOLATOR = coolInterpolate;
+Math.DEFAULT_INTERPOLATOR = Math.coolInterpolate;
 
 var _tmpPosStorage = [0,0];
 
@@ -71,7 +69,7 @@ Movable.prototype.wait = function(millis, cb) {
         timeSpent += dt;
         if(timeSpent > millis) {
             self.currentTask = null;
-            if(cb) { cb(); }
+            if(cb) { cb.call(this); }
         }
     };
 };
@@ -81,7 +79,7 @@ Movable.prototype.moveToOverTime = function(newX, newY, timeToSpend, interpolato
     this.currentTask = true;
     if(newX === null) { newX = this.x; }
     if(newY === null) { newY = this.y; }
-    if(typeof interpolator === "undefined") { interpolator = DEFAULT_INTERPOLATOR; }
+    if(typeof interpolator === "undefined") { interpolator = Math.DEFAULT_INTERPOLATOR; }
     var origX = this.x;
     var origY = this.y;
     var timeSpent = 0.0;
@@ -91,7 +89,7 @@ Movable.prototype.moveToOverTime = function(newX, newY, timeToSpend, interpolato
         if(timeSpent === timeToSpend) { // Epsilon issues possibly?
             self.moveToFast(newX, newY);
             self.currentTask = null;
-            if(cb) { cb(); }
+            if(cb) { cb.call(this); }
         } else {
             var factor = timeSpent / timeToSpend;
             self.moveToFast(interpolator(origX, newX, factor), interpolator(origY, newY, factor));

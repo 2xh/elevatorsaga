@@ -1,7 +1,9 @@
 
 function clearAll($elems) {
     _.each($elems, function($elem) {
-        $elem.empty();
+        while($elem.firstChild) {
+            $elem.removeChild($elem.firstChild);
+        }
     });
 };
 
@@ -12,86 +14,83 @@ function setTransformPos(elem, x, y) {
     elem.style["-webkit-transform"] = style;
 };
 
-function updateUserState($user, elem_user, user) {
-    setTransformPos(elem_user, user.worldX, user.worldY);
+function updateUserState($user, user) {
+    setTransformPos($user, user.worldX, user.worldY);
     if(user.done) { $user.addClass("leaving"); }
 };
 
 
 function presentStats($parent, world) {
 
-    var elem_transportedcounter = $parent.find(".transportedcounter").get(0),
-        elem_elapsedtime = $parent.find(".elapsedtime").get(0),
-        elem_transportedpersec = $parent.find(".transportedpersec").get(0),
-        elem_avgwaittime = $parent.find(".avgwaittime").get(0),
-        elem_maxwaittime = $parent.find(".maxwaittime").get(0),
-        elem_movecount = $parent.find(".movecount").get(0);
+    var elem_transportedcounter = $parent.querySelector(".transportedcounter"),
+        elem_elapsedtime = $parent.querySelector(".elapsedtime"),
+        elem_transportedpersec = $parent.querySelector(".transportedpersec"),
+        elem_avgwaittime = $parent.querySelector(".avgwaittime"),
+        elem_maxwaittime = $parent.querySelector(".maxwaittime"),
+        elem_movecount = $parent.querySelector(".movecount");
 
     world.on("stats_display_changed", function updateStats() {
         elem_transportedcounter.textContent = world.transportedCounter;
-        elem_elapsedtime.textContent = world.elapsedTime.toFixed(0) + "s";
-        elem_transportedpersec.textContent = world.transportedPerSec.toPrecision(3);
-        elem_avgwaittime.textContent = world.avgWaitTime.toFixed(1) + "s";
-        elem_maxwaittime.textContent = world.maxWaitTime.toFixed(1) + "s";
+        elem_elapsedtime.textContent = world.elapsedTime.toFixed(2) + "s";
+        elem_transportedpersec.textContent = world.transportedPerSec.toPrecision(4);
+        elem_avgwaittime.textContent = world.avgWaitTime.toPrecision(4) + "s";
+        elem_maxwaittime.textContent = world.maxWaitTime.toPrecision(4) + "s";
         elem_movecount.textContent = world.moveCount;
     });
     world.trigger("stats_display_changed");
 };
 
 function presentChallenge($parent, challenge, app, world, worldController, challengeNum, challengeTempl) {
-    var $challenge = $(riot.render(challengeTempl, {
+    var $challenge = riot.render(challengeTempl, {
         challenge: challenge,
         num: challengeNum,
         timeScale: worldController.timeScale.toFixed(0) + "x",
-        startButtonText: world.challengeEnded ? "<i class='fa fa-repeat'></i> Restart" : (worldController.isPaused ? "Start" : "Pause")
-    }));
-    $parent.html($challenge);
+        startButtonText: world.challengeEnded ? "⟲ Restart" : (worldController.isPaused ? "Start" : "Pause")
+    });
+    $parent.innerHTML = $challenge;
 
-    $parent.find(".startstop").on("click", function() {
+    $parent.querySelector(".startstop").addEventListener("click", function() {
         app.startStopOrRestart();
     });
-    $parent.find(".timescale_increase").on("click", function(e) {
+    $parent.querySelector(".timescale_increase").addEventListener("click", function(e) {
         e.preventDefault();
-        if(worldController.timeScale < 40) {
-            var timeScale = Math.round(worldController.timeScale * 1.618);
-            worldController.setTimeScale(timeScale);
-        }
+        worldController.setTimeScale(Math.round(worldController.timeScale * 2));
     });
-    $parent.find(".timescale_decrease").on("click", function(e) {
+    $parent.querySelector(".timescale_decrease").addEventListener("click", function(e) {
         e.preventDefault();
-        var timeScale = Math.round(worldController.timeScale / 1.618);
-        worldController.setTimeScale(timeScale);
+        worldController.setTimeScale(Math.round(worldController.timeScale / 2));
     });
 };
 
 function presentFeedback($parent, feedbackTempl, world, title, message, url) {
-    $parent.html(riot.render(feedbackTempl, {title: title, message: message, url: url, paddingTop: world.floors.length * world.floorHeight * 0.2}));
+    $parent.innerHTML = riot.render(feedbackTempl, {title: title, message: message, url: url, paddingTop: world.floors.length * world.floorHeight * 0.2});
     if(!url) {
-        $parent.find("a").remove();
+        var a = $parent.querySelector("a");
+        a.parentNode.removeChild(a);
     }
 };
 
 function presentWorld($world, world, floorTempl, elevatorTempl, elevatorButtonTempl, userTempl) {
-    $world.css("height", world.floorHeight * world.floors.length);
+    $world.style.height = world.floorHeight * world.floors.length + "px";
 
-    $world.append(_.map(world.floors, function(f) {
-        var $floor = $(riot.render(floorTempl, f));
-        var $up = $floor.find(".up");
-        var $down = $floor.find(".down");
+    _.each(world.floors, function(f) {
+        var $floor = document.createElement("span");
+        $floor.innerHTML = riot.render(floorTempl, f);
+        $floor = $floor.childNodes[0];
+        var $up = $floor.querySelector(".up");
+        var $down = $floor.querySelector(".down");
         f.on("buttonstate_change", function(buttonStates) {
-            $up.toggleClass("activated", buttonStates.up !== "");
-            $down.toggleClass("activated", buttonStates.down !== "");
+            buttonStates[0] ? $up.addClass("activated") : $up.removeClass("activated");
+            buttonStates[1] ? $down.addClass("activated") : $down.removeClass("activated");
         });
-        $up.on("click", function() {
-            f.pressUpButton();
+        $up.addEventListener("click", function() {
+            f.pressButton(1);
         });
-        $down.on("click", function() {
-            f.pressDownButton();
+        $down.addEventListener("click", function() {
+            f.pressButton(-1);
         });
-        return $floor;
-    }));
-    $world.find(".floor").first().find(".down").addClass("invisible");
-    $world.find(".floor").last().find(".up").addClass("invisible");
+        $world.appendChild($floor);
+    });
 
     function renderElevatorButtons(states) {
         // This is a rarely executed inner-inner loop, does not need efficiency
@@ -101,27 +100,30 @@ function presentWorld($world, world, floorTempl, elevatorTempl, elevatorButtonTe
     };
 
     function setUpElevator(e) {
-        var $elevator = $(riot.render(elevatorTempl, {e: e}));
-        var elem_elevator = $elevator.get(0);
-        $elevator.find(".buttonindicator").html(renderElevatorButtons(e.buttonStates));
-        var $buttons = _.map($elevator.find(".buttonindicator").children(), function(c) { return $(c); });
-        var elem_floorindicator = $elevator.find(".floorindicator > span").get(0);
+        var $elevator = document.createElement("span");
+        $elevator.innerHTML = riot.render(elevatorTempl, {e: e});
+        $elevator = $elevator.childNodes[0];
+        $elevator.querySelector(".buttonindicator").innerHTML = renderElevatorButtons(e.buttonStates);
+        var $buttons = $elevator.querySelector(".buttonindicator").children;
+        var elem_floorindicator = $elevator.querySelector(".floorindicator > span");
 
-        $elevator.on("click", ".buttonpress", function() {
-            e.pressFloorButton(parseInt($(this).text()));
+        _.each($buttons, function(b) {
+            b.addEventListener("click", function(){
+                e.pressFloorButton(parseInt(this.textContent));
+            });
         });
         e.on("new_display_state", function updateElevatorPosition() {
-            setTransformPos(elem_elevator, e.worldX, e.worldY);
+            setTransformPos($elevator, e.worldX, e.worldY);
         });
         e.on("new_current_floor", function update_current_floor(floor) {
             elem_floorindicator.textContent = floor;
         });
         e.on("floor_buttons_changed", function update_floor_buttons(states, indexChanged) {
-            $buttons[indexChanged].toggleClass("activated", states[indexChanged]);
+            states[indexChanged] ? $buttons[indexChanged].addClass("activated") : $buttons[indexChanged].removeClass("activated");
         });
         e.on("indicatorstate_change", function indicatorstate_change(indicatorStates) {
-            $elevator.find(".up").toggleClass("activated", indicatorStates.up);
-            $elevator.find(".down").toggleClass("activated", indicatorStates.down);
+            indicatorStates[0] ? $elevator.querySelector(".up").addClass("activated") : $elevator.querySelector(".up").removeClass("activated");
+            indicatorStates[1] ? $elevator.querySelector(".down").addClass("activated") : $elevator.querySelector(".down").removeClass("activated");
         });
         e.trigger("new_state", e);
         e.trigger("new_display_state", e);
@@ -129,19 +131,19 @@ function presentWorld($world, world, floorTempl, elevatorTempl, elevatorButtonTe
         return $elevator;
     }
 
-    $world.append(_.map(world.elevators, function(e) {
-        return setUpElevator(e);
-    }));
+    _.each(world.elevators, function(e) {
+        $world.appendChild(setUpElevator(e));
+    });
 
     world.on("new_user", function(user) {
-        var $user = $(riot.render(userTempl, {u: user, state: user.done ? "leaving" : ""}));
-        var elem_user = $user.get(0);
-
-        user.on("new_display_state", function() { updateUserState($user, elem_user, user); })
+        var $user = document.createElement("span");
+        $user.innerHTML = riot.render(userTempl, {u: user, state: user.done ? "leaving" : ""});
+        $user = $user.childNodes[0];
+        user.on("new_display_state", function() { updateUserState($user, user); })
         user.on("removed", function() {
-            $user.remove();
+            $world.removeChild($user);
         });
-        $world.append($user);
+        $world.appendChild($user);
     });
 };
 
@@ -156,10 +158,10 @@ function presentCodeStatus($parent, templ, error) {
         errorMessage = errorMessage.replace(/\n/g, "<br>");
     }
     var status = riot.render(templ, {errorMessage: errorMessage, errorDisplay: errorDisplay, successDisplay: successDisplay});
-    $parent.html(status);
+    $parent.innerHTML = status;
 };
 
 function makeDemoFullscreen() {
-    $("body .container > *").not(".world").css("visibility", "hidden");
-    $("html, body, body .container, .world").css({width: "100%", margin: "0", "padding": 0});
+    _.each(document.querySelectorAll("body .container > *:not(.world)"), function(e){e.style.visibility = "hidden"});
+    _.each(document.querySelectorAll("html, body, body .container, .world"), function(e){e.style.width = "100%", e.style.margin = 0, e.style.padding = 0});
 };

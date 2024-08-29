@@ -1,35 +1,25 @@
 
 
 html, body {
-    background-color: #BFBD9F;
-    color: white;
     margin: 0;
     padding: 0;
 }
 
-body {
-    font-family: Oswald, Arial, Helvetica, sans-serif;
-}
 h1, h2, h3, h4, h5 {
     margin-top: 0.4em;
     margin-bottom: 0.3em;
 }
 
-h1, h2, h3, h4, h5, p {
-    color: #555;
-}
-
 .emphasis-color {
-    color: #F1F2D8;
-    text-shadow: 0 2px 0.4pt #555;
+    color: gray;
 }
 
 .error-color {
-    color: #d54;
+    color: orange;
 }
 
 a {
-    color: #444;
+    color: gray;
     font-weight: bold;
     text-decoration: none;
 }
@@ -41,22 +31,15 @@ h2, h3, h4, h5 {
     font-weight: normal;
 }
 
-dl {
-    color: #555;
-}
 dl dd {
-    font: 15px Arial, Helvetica, sans-serif;
     margin-bottom: 1em;
     margin-left: 1em;
-    width: 40%;
 }
 
-
 .container {
-    width: 1220px;
+    width: 90%;
     margin: 0 auto;
     padding: 20px 0 40px 0;
-    background-color: #BFBD9F;
 }
 
 .unselectable {
@@ -75,22 +58,13 @@ button {
     font-weight: bold;
     padding-left: 10px;
     padding-right: 10px;
-    color: #333;
-    background-color: #777;
-    text-shadow: 0 0 3px #aaa;
-    border: 1px solid #666;
+    border: 1px solid gray;
     border-radius: 5px;
-    margin-right: 5px;
-}
-
-button.right {
-    margin-left: 5px;
-    margin-right: 0;
 }
 
 .blink {
-  animation: blink 0.5s steps(3, start) infinite;
   -webkit-animation: blink 0.5s steps(3, start) infinite;
+  animation: blink 0.5s steps(3, start) infinite;
 }
 @keyframes blink {
   to { visibility: hidden; }
@@ -108,7 +82,7 @@ button.right {
 }
 
 #save_message, #fitness_message {
-    color: #555;
+    color: gray;
     font-size: 12px;
     line-height: 30px;
     margin: 0 20px;
@@ -157,52 +131,43 @@ button.right {
     padding-top: 10px;
 }
 
+pre {
+    font: 14px Consolas, Monaco, monospace;
+}
+
 .CodeMirror {
     font: 14px Consolas, Monaco, monospace;
-    width: 1220px;
     margin: 10px auto;
-    height: 320px;
 }
 
 .world {
     position: relative;
-    width: 1220px;
-    background-color: #333;
+    background-color: dimgray;
     padding: 0;
-    overflow: hidden;
 }
 
 .innerworld {
     position: relative;
-    height: 100%;
-    width: 938px;
-    border-right: 1px solid black;
-    border-left: 1px solid black;
-    font-family: Arial, Helvetica, sans-serif;
+    margin-right: 280px;
+    border-right: 1px solid;
+    border-left: 1px solid;
 }
 
 .statscontainer {
     font: 12px Consolas, Monaco, monospace;
-    line-height: 10px;
-    color: #999;
+    color: lightgray;
     position: absolute;
     top: 0;
     right: 0px;
     width: 240px;
-    height: 200px;
     padding: 20px;
     z-index: 1;
-}
-
-.statscontainer div {
-    border-bottom: 1px solid #444;
 }
 
 .statscontainer div, .statscontainer span {
     position: absolute;
     display: block;
     width: 240px;
-    height: 10px;
 }
 
 .statscontainer .value {
@@ -212,18 +177,16 @@ button.right {
 
 .feedbackcontainer {
     position: absolute;
+    width: 100%;
+    height: 100%;
 }
 
 .feedback {
-    position: absolute;
-    width: 1280px;
-    height: 2000px;
-    padding-top: 20px;
-    line-height: 20px;
+    position: relative;
     text-align: center;
-    background-color: rgba(44,44,44, 0.6);
+    height: 100%;
+    background-color: rgba(44, 44, 44, 0.6);
     z-index: 5;
-    overflow: hidden;
 }
 
 .movable {
@@ -239,6 +202,18 @@ button.right {
     z-index: 2;
 }
 
+.user.male:before {
+    content: "🧍‍♂️";
+}
+
+.user.female:before {
+    content: "🧍‍♀️";
+}
+
+.user.child:before {
+    content: "🧍";
+}
+
 .user.happy {
 }
 
@@ -251,7 +226,15 @@ button.right {
 }
 
 .user.leaving {
-    color: #eee;
+    color: silver;
+}
+
+.up:before {
+    content: "⬆";
+}
+
+.down:before {
+    content: "⬇";
 }
 
 .elevator {
@@ -263,8 +246,6 @@ button.right {
 
 .elevator .directionindicator {
     position: absolute;
-    font-size: 10px;
-    top: 3px;
 }
 
 .elevator .directionindicator.directionindicatorup {
@@ -275,12 +256,12 @@ button.right {
     right: 2px;
 }
 
-.elevator .directionindicator .fa{
-    color: rgba(255, 255, 255, 0.2);
+.elevator .directionindicator {
+    color: rgba(255, 255, 255, 0.5);
 }
 
-.elevator .directionindicator .fa.activated{
-    color: #33ff44;
+.elevator .directionindicator .activated{
+    color: lime;
 }
 
 .elevator .floorindicator {
@@ -289,7 +270,7 @@ button.right {
     width: 100%;
     font-size: 15px;
     text-align: center;
-    color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.5);
 }
 
 
@@ -297,11 +278,10 @@ button.right {
     display: inline-block;
     position: absolute;
     top: 15px;
-    width: 95%;
+    width: 100%;
     text-align: center;
     font-size: 8px;
-    line-height: 8px;
-    color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.5);
 }
 .elevator .buttonpress {
     cursor: pointer;
@@ -309,31 +289,32 @@ button.right {
     display: inline-block;
 }
 .elevator .buttonpress.activated {
-    color: #33ff44;
+    color: lime;
 }
 
 .floor {
     position: absolute;
     width: 100%;
     height: 49px;
-    background-color: rgba(255, 255, 255, 0.1);
-    background: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0.2), rgba(255,255,255,0.24), rgba(255,255,255,0.1)); /* Standard syntax */
-    border-bottom: 1px solid #333;
+    background-color: gray;
+    background: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0.25), rgba(255,255,255,0.25), rgba(255,255,255,0.1)); /* Standard syntax */
+    border-bottom: 1px solid;
 }
 
 .floor .buttonindicator {
     cursor: pointer;
+    font-size: 20px;
     line-height: 50px;
     padding-left: 50px;
-    color: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.25);
 }
 .floor .buttonindicator .activated {
-    color: rgba(55, 255, 55, 1.0);
+    color: lime;
 }
 
 .floor .floornumber {
     position: absolute;
-    color: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.25);
     font-size: 32px;
     line-height: 50px;
     padding-left: 10px;
@@ -352,27 +333,18 @@ button.right {
     margin-bottom: 30px;
 }
 
-.help p {
-    max-width: 75%;
-}
-
 .doctable {
+    width: 100%;
     margin-top: 10px;
     margin-bottom: 20px;
-    color: #555;
     border: none;
 }
 
 .doctable th, .doctable td  {
     text-align: left;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid;
 }
 
 .doctable tr td:first-child {
     padding-right: 5px;
-    color: #333;
-}
-
-.doctable td {
-    font: 13px Consolas, Monaco, monospace;
 }
