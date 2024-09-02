@@ -2,7 +2,8 @@
 document.addEventListener("DOMContentLoaded", function() {
     var $ = function(selectors){return document.querySelector(selectors)};
     var createEditor = function() {
-    var lsKey = "elevatorCrushCode_v5";
+    var lsKey = "elevatorCode";
+    var autosave = true;
 
     var cm = CodeMirror.fromTextArea(document.getElementById("code"), {
         lineNumbers: true,
@@ -44,43 +45,75 @@ document.addEventListener("DOMContentLoaded", function() {
         cm.setValue($("#default-elev-implementation").textContent.trim());
     };
     var saveCode = function() {
-        localStorage.setItem(lsKey, cm.getValue());
-        $("#save_message").textContent = "Code saved " + new Date().toTimeString();
+        try {
+            localStorage.setItem(lsKey, cm.getValue());
+            $("#save_message").textContent = "Code saved " + new Date().toTimeString();
+        } catch(e) {
+            console.log(e);
+            $("#save_message").textContent = "Unable to save code";
+            $("#save_message").style.color = "red";
+            autosave = false;
+            $("#button_save").style.display = "none";
+        }
         returnObj.trigger("change");
     };
 
-    var existingCode = localStorage.getItem(lsKey);
+    try {
+        var existingCode = localStorage.getItem(lsKey);
+    } catch(e) {
+        console.log(e);
+        var existingCode = null;
+    }
     if(existingCode) {
         cm.setValue(existingCode);
     } else {
         reset();
     }
 
-    $("#button_save").addEventListener("click", function() {
-        saveCode();
-        cm.focus();
+    $("#button_save").addEventListener("click", saveCode);
+
+    $("#button_save").addEventListener("contextmenu", function(e) {
+        autosave = !autosave;
+        $("#save_message").textContent = "Autosave " + (autosave ? "on" : "off");
+        e.preventDefault();
     });
 
     $("#button_reset").addEventListener("click", function() {
         if(confirm("Do you really want to reset to the default implementation?")) {
-            sessionStorage.setItem("develevateBackupCode", cm.getValue());
+            try {
+                sessionStorage.setItem("develevateBackupCode", cm.getValue());
+            } catch(e) {
+                console.log(e);
+                if(!confirm("Current code will be DELETED")) {
+                    return;
+                }
+            }
             reset();
         }
         cm.focus();
     });
 
     $("#button_resetundo").addEventListener("click", function() {
-        var code = sessionStorage.getItem("develevateBackupCode");
-        if(code && confirm("Do you want to bring back the code as before the last reset?")) {
+        try {
+            var code = sessionStorage.getItem("develevateBackupCode");
+        } catch(e) {
+            console.log(e);
+            alert("Unable to restore code");
+            this.style.display = "none";
+            var code = null;
+        }
+        if(code && confirm("Do you want to restore the code before the last reset?")) {
             cm.setValue(code);
         }
         cm.focus();
     });
 
     var returnObj = riot.observable({});
-    var autoSaver = _.debounce(saveCode, 1000);
+    var autoSaver = _.debounce(saveCode, 2000);
     cm.on("change", function() {
-        autoSaver();
+        if(autosave) {
+            autoSaver();
+        }
     });
 
     returnObj.getCodeObj = function() {
@@ -174,7 +207,11 @@ document.addEventListener("DOMContentLoaded", function() {
         presentWorld($world, app.world, floorTempl, elevatorTempl, elevatorButtonTempl, userTempl);
 
         app.worldController.on("timescale_changed", function() {
-            localStorage.setItem(tsKey, app.worldController.timeScale);
+            try {
+                localStorage.setItem(tsKey, app.worldController.timeScale);
+            } catch(e) {
+                console.log(e);
+            }
             presentChallenge($challenge, challenges[challengeIndex], app, app.world, app.worldController, challengeIndex + 1, challengeTempl);
         });
 
@@ -221,14 +258,20 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     editor.trigger("change");
 
-    riot.route(function(path) {
+    var prepareChallenge = function() {
+        var path = location.hash;
         params = _.reduce(path.split(","), function(result, p) {
             var match = p.match(/(\w+)=(\w+$)/);
             if(match) { result[match[1]] = match[2]; } return result;
         }, {});
         var requestedChallenge = 0;
         var autoStart = false;
-        var timeScale = parseFloat(localStorage.getItem(tsKey)) || 2.0;
+        try {
+            var timeScale = parseFloat(localStorage.getItem(tsKey)) || 2.0;
+        } catch(e) {
+            console.log(e);
+            var timeScale = 1.0;
+        }
         _.each(params, function(val, key) {
             if(key === "challenge") {
                 requestedChallenge = _.parseInt(val) - 1;
@@ -249,5 +292,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         app.worldController.setTimeScale(timeScale);
         app.startChallenge(requestedChallenge, autoStart);
-    });
-}, true);
+    };
+    window.addEventListener("hashchange", prepareChallenge);
+    prepareChallenge();
+});

@@ -104,7 +104,7 @@ function presentWorld($world, world, floorTempl, elevatorTempl, elevatorButtonTe
         $elevator.innerHTML = riot.render(elevatorTempl, {e: e});
         $elevator = $elevator.childNodes[0];
         $elevator.querySelector(".buttonindicator").innerHTML = renderElevatorButtons(e.buttonStates);
-        var $buttons = $elevator.querySelector(".buttonindicator").children;
+        var $buttons = $elevator.querySelector(".buttonindicator").childNodes;
         var elem_floorindicator = $elevator.querySelector(".floorindicator > span");
 
         _.each($buttons, function(b) {

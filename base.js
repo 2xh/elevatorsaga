@@ -1,7 +1,7 @@
 // Console shim
 (function () {
     var f = function () {};
-    if (!console) {
+    if (!self.console) {
         console = {
             log:f, info:f, warn:f, debug:f, error:f
         };
@@ -25,6 +25,12 @@ if(typeof Math.sign === "undefined") {
         }
         return x > 0 ? 1 : -1;
     };
+}
+
+if(!self.requestAnimationFrame) {
+    self.requestAnimationFrame = function(callback) {
+        return setTimeout(callback, 1.0 / 60.0, new Date().getTime());
+    }
 }
 
 Element.prototype.addClass = function(c) {

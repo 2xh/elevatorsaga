@@ -16,7 +16,7 @@ var createWorldCreator = function() {
         elevatorCapacities = elevatorCapacities || [6];
         elevatorSpeeds = elevatorSpeeds || [3];
         startFloors = startFloors || [0];
-        var currentX = 150.0;
+        var currentX = 170.0;
         var elevators = _.map(_.range(elevatorCount), function(e, i) {
             var elevator = new Elevator(elevatorSpeeds[i%elevatorSpeeds.length], floorCount, floorHeight, elevatorCapacities[i%elevatorCapacities.length], errorHandler);
 
@@ -50,7 +50,7 @@ var createWorldCreator = function() {
             lobbyPossibility = 0.5;
         }
         var user = creator.createRandomUser();
-        user.moveTo(80+_.random(40), 0);
+        user.moveTo(100+_.random(40), 0);
         var currentFloor = Math.random() < lobbyPossibility ? 0 : _.random(1, floorCount - 1);
         var destinationFloor;
         if(currentFloor === 0) {
@@ -114,12 +114,7 @@ var createWorldCreator = function() {
             // Use regular loops for memory/performance reasons
             // Notify floors first because overflowing users
             // will press buttons again.
-            for(var i=0, len=world.floors.length; i<len; ++i) {
-                var floor = world.floors[i];
-                if(elevator.currentFloor === i) {
-                    floor.elevatorAvailable(elevator);
-                }
-            }
+            world.floors[elevator.currentFloor].elevatorAvailable(elevator);
             for(var users=world.users, i=0, len=users.length; i < len; ++i) {
                 var user = users[i];
                 if(user.currentFloor === elevator.currentFloor) {
@@ -142,8 +137,10 @@ var createWorldCreator = function() {
                     // Elevator is heading in correct direction, check for suitability
                     if(elevator.currentFloor === floor.level && elevator.isOnAFloor() && !elevator.isMoving && !elevator.isFull()) {
                         // Potentially suitable to get into
-                        // Use the interface queue functionality to queue up this action
-                        elevator.goToFloor(floor.level);
+                        if(elevator.currentTask) {
+                            elevator.currentTask(null);
+                        }
+                        elevator.moveToFloor(floor.level);
                         return;
                     }
                 }

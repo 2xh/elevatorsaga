@@ -66,6 +66,10 @@ Movable.prototype.wait = function(millis, cb) {
     var timeSpent = 0.0;
     var self = this;
     self.currentTask = function waitTask(dt) {
+        if(dt === null) {
+            self.currentTask = null;
+            return;
+        }
         timeSpent += dt;
         if(timeSpent > millis) {
             self.currentTask = null;

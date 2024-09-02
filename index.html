@@ -4,9 +4,10 @@
     <title>Elevator Saga - the elevator programming game</title>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=425,initial-scale=1">
     <meta name="color-scheme" content="light dark">
 
-    <link rel="stylesheet" href="libs/codemirror/codemirror.css">
+    <link rel="stylesheet" href="libs/codemirror/codemirror.css" type="text/css" media="all">
     <link rel="stylesheet" href="style.css" type="text/css" media="all">
 
     <script type="text/javascript" src="libs/lodash.min.js"></script>
@@ -70,10 +71,10 @@
         <div class="left">
             <h3>Challenge #{num}: {challenge.condition.description}</h3>
         </div>
-        <button class="right startstop unselectable" style="width: 110px">{startButtonText}</button>
+        <button class="right startstop unselectable">{startButtonText}</button>
         <h3 class="right">
             <span class="timescale_decrease unselectable">➖</span>
-            <span class="emphasis-color" style="display: inline-block; text-align: center">{timeScale}</span>
+            <span class="emphasis-color" style="display: inline-block; text-align: center; width: 3em">{timeScale}</span>
             <span class="timescale_increase unselectable">➕</span>
         </h3>
     </script>
@@ -103,31 +104,134 @@
     <script type="text/plain" id="devtest-elev-implementation">
 {
     init: function(elevators, floors) {
-        var selectElevatorForFloorPickup = function(floorNum) {
-            return _.max(elevators, function(e) {
-                return (_.contains(e.destinationQueue, floorNum) ? 4 : 0) +
-                    (-e.destinationQueue.length*e.destinationQueue.length) +
-                    (-e.loadFactor()*e.loadFactor() * 3);
+        var that = this;
+        location.hash.split(",").some(function(param){
+            var match = param.match(/challenge=([1-9]\d*$)/);
+            if(match) {
+                that.clearConditionIsMoves = false;
+                if(challenges[match[1] - 1] && challenges[match[1] - 1].condition.description.match("moves")) {
+                    that.clearConditionIsMoves = true;
+                }
+                return true;
+            }
+        });
+        this.preferChoices = function(elevator){
+            var otherElevators = elevators.filter(function(Elevator){return Elevator !== elevator});
+            var gotoChoices = floors.filter(function(floor, floorNum){
+                return (floor.buttonStates[0] || floor.buttonStates[1]) && !otherElevators.some(function(otherElevator){
+                    return Math.abs(floorNum - (otherElevator.destinationQueue[0] || otherElevator.getExactCurrentFloor())) < Math.abs(floorNum - elevator.getExactCurrentFloor())
+                    && ((otherElevator.destinationQueue == floorNum || !otherElevator.destinationQueue.length) || !otherElevator.isFull()
+                        && (!floor.buttonStates[0] || otherElevator.directionalIndicators[0] && otherElevator.getExactFutureFloorIfStopped() <= floorNum)
+                        && (!floor.buttonStates[1] || otherElevator.directionalIndicators[1] && otherElevator.getExactFutureFloorIfStopped() >= floorNum));
+                });
+            }).map(function(floor){return floor.level});
+            return gotoChoices.sort(function(gotoChoice1, gotoChoice2){
+                if(elevator.directionalIndicators[0]) {
+                    return gotoChoice2 - gotoChoice1;
+                } else if(elevator.directionalIndicators[1]) {
+                    return gotoChoice1 - gotoChoice2;
+                } else {
+                    return Math.abs(gotoChoice1 - elevator.currentFloor) - Math.abs(gotoChoice2 - elevator.currentFloor);
+                }
             });
         };
-
-        _.each(floors, function(floor) {
-            floor.on("down_button_pressed up_button_pressed", function() {
-                var elevator = selectElevatorForFloorPickup(floor.level);
-                if(!_.contains(elevator.destinationQueue, floor.level)) {
-                    elevator.destinationQueue.push(floor.level);
-                    elevator.checkDestinationQueue();
+        this.updateDestination = function(elevator, queue){
+            if(queue == undefined) {
+                return;
+            } else if(typeof queue === "number") {
+                elevator.destinationQueue = [queue];
+                this.updateDirection(elevator);
+            } else {
+                var uppers = queue.filter(function(num){return num > elevator.currentFloor}).sort(function(num1, num2){return num1 - num2});
+                var lowers = queue.filter(function(num){return num < elevator.currentFloor}).sort(function(num1, num2){return num2 - num1});
+                if(!uppers.length) {
+                    elevator.directionalIndicators[0] = false;
+                    if(lowers.length) {
+                        elevator.directionalIndicators[1] = true;
+                    }
+                }
+                if(!lowers.length) {
+                    elevator.directionalIndicators[1] = false;
+                    if(uppers.length) {
+                        elevator.directionalIndicators[0] = true;
+                    }
+                }
+                if(elevator.directionalIndicators[0]) {
+                    elevator.destinationQueue = uppers.concat(lowers);
+                } else if(elevator.directionalIndicators[1]) {
+                    elevator.destinationQueue = lowers.concat(uppers);
+                } else {
+                    elevator.destinationQueue = queue.filter(function(num){return typeof num === "number"});
+                    this.updateDirection(elevator);
+                }
+            }
+            if(elevator.destinationQueue.length) {
+                elevator.checkDestinationQueue();
+            }
+        };
+        this.updateDirection = function(elevator){
+            if(elevator.destinationQueue[0] > elevator.currentFloor) {
+                elevator.directionalIndicators = [true, false];
+            } else if(elevator.destinationQueue[0] < elevator.currentFloor) {
+                elevator.directionalIndicators = [false, true];
+            } else if(elevator.destinationQueue[0] === elevator.currentFloor) {
+                elevator.directionalIndicators = [true, true];
+            } else {
+                elevator.directionalIndicators = [false, false];
+            }
+        };
+        elevators.forEach(function(elevator, index){
+            elevator.on("stopped_at_floor", function(floorNum){
+                if(elevator.directionalIndicators[0] && (floors[floorNum].buttonStates[0] || elevator.destinationQueue.some(function(num){return num > floorNum}))
+                   || elevator.directionalIndicators[1] && (floors[floorNum].buttonStates[1] || elevator.destinationQueue.some(function(num){return num < floorNum}))) {
+                    return;
+                }
+                if(floors[floorNum].buttonStates[0] && that.preferChoices(elevator).some(function(num){return num < floorNum})
+                   || floors[floorNum].buttonStates[1] && that.preferChoices(elevator).some(function(num){return num > floorNum})) {
+                    if(!that.clearConditionIsMoves) {
+                        elevators.filter(function(Elevator){return !Elevator.destinationQueue.length && Elevator.isEmpty()})
+                            .forEach(function(Elevator){that.updateDestination(Elevator, that.preferChoices(Elevator)[0])});
+                    }
+                } else if(elevator.destinationQueue.length) {
+                    that.updateDirection(elevator);
+                } else {
+                    elevator.directionalIndicators = [floors[floorNum].buttonStates[0], floors[floorNum].buttonStates[1]];
+                }
+            });
+            elevator.on("passing_floor", function(floorNum, direction){
+                var isOtherElevetorStop = elevators.some(function(elevatorGoFloor){
+                    return elevatorGoFloor.destinationQueue[0] === floorNum && (direction > 0 && elevatorGoFloor.directionalIndicators[0] || direction < 0 && elevatorGoFloor.directionalIndicators[1]);
+                });
+                if(floors[floorNum].buttonStates[direction > 0 ? 0 : 1] && !elevator.isFull() && !isOtherElevetorStop) {
+                    elevator.goToFloor(floorNum);
+                    if(!that.clearConditionIsMoves && !elevator.getPressedFloors().length) {
+                        elevators.filter(function(Elevator){return !Elevator.destinationQueue.length && Elevator.isEmpty()})
+                            .forEach(function(Elevator){that.updateDestination(Elevator, that.preferChoices(Elevator)[0])});
+                    }
+                }
+            });
+            elevator.on("floor_button_pressed", function(floorNum){
+                if(!that.clearConditionIsMoves || elevator.destinationQueue.filter(function(floor){return floor !== elevator.currentFloor}).length) {
+                    that.updateDestination(elevator, elevator.getPressedFloors());
+                }
+            });
+            elevator.on("idle", function(){
+                if(!that.clearConditionIsMoves) {
+                    that.updateDestination(elevator, elevator.getPressedFloors().concat(that.preferChoices(elevator)[0]));
                 }
             });
         });
-        _.each(elevators, function(elevator) {
-            elevator.on("floor_button_pressed", function(floorNum) {
-                elevator.destinationQueue.push(floorNum);
-                elevator.checkDestinationQueue();
+        floors.forEach(function(floor, floorNum){
+            floor.on("up_button_pressed down_button_pressed", function(){
+                elevators.filter(function(elevator){return !elevator.destinationQueue.length && elevator.isEmpty()}).forEach(function(elevator){that.updateDestination(elevator, that.preferChoices(elevator)[0])});
             });
         });
     },
     update: function(dt, elevators, floors) {
+        var that = this;
+        if(that.clearConditionIsMoves) {
+            elevators.filter(function(elevator){return !elevator.destinationQueue.length && elevator.isFull()}).forEach(function(elevator){that.updateDestination(elevator, elevator.getPressedFloors())});
+        }
     }
 }
     </script>
@@ -135,7 +239,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1 class="left">Elevator Saga <em class="emphasis-color">The elevator programming game</em></h1>
+            <h1 style="display: inline-block">Elevator Saga <em class="emphasis-color">The elevator programming game</em></h1>
             <a class="right" href="https://github.com/magwo/elevatorsaga/wiki/">Wiki & Solutions</a>
             <a class="right" href="documentation.html#docs">Documentation</a>
             <a class="right" href="documentation.html">Help</a>
@@ -145,10 +249,10 @@
             <h2>Your browser does not appear to support JavaScript. This page contains a browser-based programming game implemented in JavaScript.</h2>
         </noscript>
 
-        <div class="challenge" style="height: 40px">
+        <div class="challenge" style="height: 40px; clear: both">
         </div>
 
-        <div class="world">
+        <div class="world" style="clear: both">
             <div class="feedbackcontainer"></div>
             <div class="innerworld">
             </div>
@@ -166,15 +270,14 @@
         <div class="code">
             <textarea name="Code" id="code"></textarea>
         </div>
-        <button id="button_reset" style="float: left">Reset</button>
-        <button id="button_resetundo" style="float: left">Undo reset</button>
-        <button id="button_apply" style="float: right">Apply</button>
-        <button id="button_save" style="float: right">Save</button>
-        <span id="save_message" style="float: right"></span>
-        <span id="fitness_message" style="float: right"></span>
-        <div style="clear:both;"></div>
+        <button id="button_reset" class="left">Reset</button>
+        <button id="button_resetundo" class="left">Undo reset</button>
+        <button id="button_apply" class="right">Apply</button>
+        <button id="button_save" class="right">Save</button>
+        <span id="save_message" class="right"></span>
+        <span id="fitness_message" class="right"></span>
 
-        <div style="margin-top: 20px">
+        <div style="padding-top: 1em; clear: both">
             <h3>Confused? Open the <a href="documentation.html">Help and API documentation</a> page</h3>
         </div>
         <div class="footer">
