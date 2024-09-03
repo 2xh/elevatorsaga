@@ -182,19 +182,19 @@
         };
         elevators.forEach(function(elevator, index){
             elevator.on("stopped_at_floor", function(floorNum){
-                if(elevator.directionalIndicators[0] && (floors[floorNum].buttonStates[0] || elevator.destinationQueue.some(function(num){return num > floorNum}))
-                   || elevator.directionalIndicators[1] && (floors[floorNum].buttonStates[1] || elevator.destinationQueue.some(function(num){return num < floorNum}))) {
+                if(elevator.directionalIndicators[0] && (floors[floorNum].buttonStates[0] || elevator.destinationQueue[0] > floorNum)
+                   || elevator.directionalIndicators[1] && (floors[floorNum].buttonStates[1] || elevator.destinationQueue[0] < floorNum)) {
                     return;
                 }
-                if(floors[floorNum].buttonStates[0] && that.preferChoices(elevator).some(function(num){return num < floorNum})
-                   || floors[floorNum].buttonStates[1] && that.preferChoices(elevator).some(function(num){return num > floorNum})) {
+                if(floors[floorNum].buttonStates[0] && that.preferChoices(elevator)[0] < floorNum
+                   || floors[floorNum].buttonStates[1] && that.preferChoices(elevator)[0] > floorNum) {
                     if(!that.clearConditionIsMoves) {
                         elevators.filter(function(Elevator){return !Elevator.destinationQueue.length && Elevator.isEmpty()})
                             .forEach(function(Elevator){that.updateDestination(Elevator, that.preferChoices(Elevator)[0])});
                     }
                 } else if(elevator.destinationQueue.length) {
                     that.updateDirection(elevator);
-                } else {
+                } else if(floors[floorNum].buttonStates[0] || floors[floorNum].buttonStates[1]) {
                     elevator.directionalIndicators = [floors[floorNum].buttonStates[0], floors[floorNum].buttonStates[1]];
                 }
             });

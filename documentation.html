@@ -102,7 +102,7 @@
                     <tr><td>isApproachingFloor</td><td>Function</td><td><small>Check if the elevator is moving closer to specified floor.</small></td><td><pre><code>if(elevator.isApproachingFloor(0)) {
     // Do something special?
 }</code></pre></td></tr>
-                    <tr><td>directionalIndicators</td><td>Array</td><td><small>Get or set the going up indicator (index 0) or going down indicator (index 1), which will affect passenger behaviour when stopping at floors.</small></td><td><pre><code>if(elevator.directionalIndicators[0]) {
+                    <tr><td>directionalIndicators</td><td>Boolean array</td><td><small>Get or set the going up indicator (index 0) or going down indicator (index 1), which will affect passenger behaviour when stopping at floors. Note that indicator changes are visually updated only when the elevator starts or stops.</small></td><td><pre><code>if(elevator.directionalIndicators[0]) {
     elevator.directionalIndicators[1] = false;
 }</code></pre></td></tr>
                     <tr><td>maxUsers</td><td>Number</td><td><small>Get the maximum number of passengers that can occupy the elevator at the same time.</small></td><td><pre><code>if(elevator.maxUsers >= 8) {
@@ -118,7 +118,7 @@
     // This elevator is rather fast
 }</code></pre></td></tr>
                     <tr><td>velocityY</td><td>Number</td><td><small>Get the velocity of the elevator. A positive number means going up, and a negative one means going down.</small></td><td>-</td></tr>
-                    <tr><td>destinationQueue</td><td>Array</td><td><small>The current destination queue, meaning the floor numbers the elevator is scheduled to go to. Can be modified and emptied if desired. Note that you need to call checkDestinationQueue() for the change to take effect immediately.</small></td><td rowspan="2"><pre><code>//C-LOOK algorithm
+                    <tr><td>destinationQueue</td><td>Number array</td><td><small>The current destination queue, meaning the floor numbers the elevator is scheduled to go to. Can be modified and emptied if desired. Note that you need to call checkDestinationQueue() for the change to take effect immediately.</small></td><td rowspan="2"><pre><code>//C-LOOK algorithm
 elevator.destinationQueue.sort();
 elevator.checkDestinationQueue();</code></pre></td></tr>
                     <tr><td>checkDestinationQueue</td><td>Function</td><td><small>Check the destination queue for any new destinations to go to. Note that you only need to call this if you modify the destination queue explicitly.</small></td></tr>
@@ -147,7 +147,7 @@ elevator.checkDestinationQueue();</code></pre></td></tr>
                 <thead><th>Property</th><th>Type</th><th>Explanation</th><th>Example</th></thead>
                 <tbody>
                     <tr><td>level</td><td>Number</td><td><small>Get the floor number of the floor object.</small></td><td><pre><code>if(floor.level > 3) { ... }</code></pre></td></tr>
-                    <tr><td>buttonStates</td><td>Array</td><td><small>Get button states, which include the up button (index 0) or down button (index 1), of specified floor.</small></td><td><pre><code>if(floor.buttonStates[0]) {
+                    <tr><td>buttonStates</td><td>Boolean array</td><td><small>Get button states, which include the up button (index 0) or down button (index 1), of specified floor.</small></td><td><pre><code>if(floor.buttonStates[0]) {
     // Maybe call an elevator to pick up?
 }</code></pre></td></tr>
                     <tr><td>pressButton</td><td>Function</td><td><small>Press the button on specified floor. A positive number means up, and a negative one means down. Note that you normally don't need to manually press buttons - it is needed only for testing.</small></td><td><pre><code>floor.pressButton(1);

@@ -82,6 +82,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if(confirm("Do you really want to reset to the default implementation?")) {
             try {
                 sessionStorage.setItem("develevateBackupCode", cm.getValue());
+                $("#button_resetundo").style.display = "";
             } catch(e) {
                 console.log(e);
                 if(!confirm("Current code will be DELETED")) {
@@ -89,7 +90,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             }
             reset();
-            $("#button_resetundo").style.display = "";
         }
         cm.focus();
     });
