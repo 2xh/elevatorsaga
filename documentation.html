@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Elevator Saga - help and API documentation</title>
+    <title>Elevator Saga - Help and API Documentation</title>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -19,7 +19,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Elevator Saga <em class="emphasis-color">Help and API documentation</em></h1>
+            <h1>Elevator Saga <em class="emphasis-color">Help and API Documentation</em></h1>
         </div>
 
         <div class="help">
@@ -41,9 +41,9 @@
             </p>
             <p>
                 If your program contains an error, you can use the developer tools in your web browser to try and debug it.
-                If you want to start over with the code, press the <span class="emphasis-color">Reset</span> button. This will revert the code to a working but simplistic implementation.
+                If you want to start over with the code, press the <span class="emphasis-color">Reset</span> button. This will revert the code to a simplistic implementation.
                 If you have a favorite text editor, such as <a href="http://www.sublimetext.com/">Sublime Text</a>, feel free to edit the code there and paste it into the game editor.
-                Your code is automatically saved in your local storage, so don't worry - it doesn't disappear if you accidentally close the browser.
+                Your code is automatically saved in your local storage by default, right click <span class="emphasis-color">Save</span> button to toggle.
             </p>
             <h2>Basics</h2>
             <p>
@@ -108,7 +108,7 @@
                     <tr><td>maxUsers</td><td>Number</td><td><small>Get the maximum number of passengers that can occupy the elevator at the same time.</small></td><td><pre><code>if(elevator.maxUsers >= 8) {
     // Use this elevator for something special, because it's big
 }</code></pre></td></tr>
-                    <tr><td>loadFactor</td><td>Function</td><td><small>Get the load factor of the elevator. 0 means empty, 1 means full. Varies with passenger weights, which vary - not an exact measure. Note that sometimes the elevator may be overloaded, but it does not matter.</small></td><td><pre><code>if(elevator.loadFactor() < 0.5) {
+                    <tr><td>loadFactor</td><td>Function</td><td><small>Get the load factor of the elevator. 0 means empty, 1 means full. Varies with passenger weights, which vary - not an exact measure. Note that sometimes the elevator may be overloaded - it does not matter.</small></td><td><pre><code>if(elevator.loadFactor() < 0.5) {
     // Maybe use this elevator, since it's less than half full yet?
 }</code></pre></td></tr>
                     <tr><td>isFull<br>isEmpty</td><td>Function</td><td><small>Detect if the elevator is full (empty) more simply.</small></td><td><pre><code>if(elevator.isEmpty()) {
@@ -118,8 +118,10 @@
     // This elevator is rather fast
 }</code></pre></td></tr>
                     <tr><td>velocityY</td><td>Number</td><td><small>Get the velocity of the elevator. A positive number means going up, and a negative one means going down.</small></td><td>-</td></tr>
-                    <tr><td>destinationQueue</td><td>Array</td><td><small>The current destination queue, meaning the floor numbers the elevator is scheduled to go to. Can be modified and emptied if desired. Note that you need to call checkDestinationQueue() for the change to take effect immediately.</small></td><td><pre><code>elevator.destinationQueue.sort(); //Make elevator more efficient</code></pre></td></tr>
-                    <tr><td>checkDestinationQueue</td><td>Function</td><td><small>Check the destination queue for any new destinations to go to. Note that you only need to call this if you modify the destination queue explicitly.</small></td><td><pre><code>elevator.checkDestinationQueue();</code></pre></td></tr>
+                    <tr><td>destinationQueue</td><td>Array</td><td><small>The current destination queue, meaning the floor numbers the elevator is scheduled to go to. Can be modified and emptied if desired. Note that you need to call checkDestinationQueue() for the change to take effect immediately.</small></td><td rowspan="2"><pre><code>//C-LOOK algorithm
+elevator.destinationQueue.sort();
+elevator.checkDestinationQueue();</code></pre></td></tr>
+                    <tr><td>checkDestinationQueue</td><td>Function</td><td><small>Check the destination queue for any new destinations to go to. Note that you only need to call this if you modify the destination queue explicitly.</small></td></tr>
                     <tr><td>getPressedFloors</td><td>Function</td><td><small>Get the currently pressed floor numbers as an array sorted ascendingly.</small></td><td><pre><code>if(elevator.getPressedFloors().length > 0) {
     // Maybe go to some chosen floor first?
 }</code></pre></td></tr>

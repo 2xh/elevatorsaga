@@ -89,6 +89,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             }
             reset();
+            $("#button_resetundo").style.display = "";
         }
         cm.focus();
     });
