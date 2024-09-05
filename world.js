@@ -16,7 +16,7 @@ var createWorldCreator = function() {
         elevatorCapacities = elevatorCapacities || [6];
         elevatorSpeeds = elevatorSpeeds || [3];
         startFloors = startFloors || [0];
-        var currentX = 170.0;
+        var currentX = 160.0;
         var elevators = _.map(_.range(elevatorCount), function(e, i) {
             var elevator = new Elevator(elevatorSpeeds[i%elevatorSpeeds.length], floorCount, floorHeight, elevatorCapacities[i%elevatorCapacities.length], errorHandler);
 
@@ -50,7 +50,7 @@ var createWorldCreator = function() {
             lobbyPossibility = 0.5;
         }
         var user = creator.createRandomUser();
-        user.moveTo(100+_.random(40), 0);
+        user.moveTo(90+_.random(40), 0);
         var currentFloor = Math.random() < lobbyPossibility ? 0 : _.random(1, floorCount - 1);
         var destinationFloor;
         if(currentFloor === 0) {

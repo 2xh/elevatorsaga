@@ -123,7 +123,7 @@ pre.cm-s-default, .CodeMirror {
 
 .innerworld {
     position: relative;
-    margin-right: 280px;
+    margin-right: 220px;
     border-right: 1px solid;
     border-left: 1px solid;
 }
@@ -134,7 +134,7 @@ pre.cm-s-default, .CodeMirror {
     position: absolute;
     top: 0;
     right: 0px;
-    width: 240px;
+    width: 180px;
     padding: 20px;
     z-index: 1;
 }
@@ -142,7 +142,7 @@ pre.cm-s-default, .CodeMirror {
 .statscontainer div, .statscontainer span {
     position: absolute;
     display: block;
-    width: 240px;
+    width: 180px;
 }
 
 .statscontainer .value {
@@ -278,7 +278,7 @@ pre.cm-s-default, .CodeMirror {
     cursor: pointer;
     font-size: 1.25em;
     line-height: 50px;
-    padding-left: 70px;
+    padding-left: 60px;
     color: rgba(255, 255, 255, 0.25);
 }
 .floor .buttonindicator .activated {
@@ -288,7 +288,7 @@ pre.cm-s-default, .CodeMirror {
 .floor .floornumber {
     position: absolute;
     color: rgba(255, 255, 255, 0.25);
-    font-size: 2em;
+    font-size: 1.5em;
     line-height: 50px;
     padding-left: 10px;
 }

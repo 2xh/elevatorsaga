@@ -98,7 +98,7 @@ var challenges = [
     ,{options: {floorCount: 41, elevatorCount: 8, spawnRate: 3.5, elevatorCapacities: [8, 12], elevatorSpeeds: [8, 6]}, condition: requireUserCountWithinTime(900, 300)}
     ,{options: {floorCount: 25, elevatorCount: 8, spawnRate: 1.6, elevatorCapacities: [6, 8]}, condition: requireUserCountWithinTimeWithMaxWaitTime(1900, 1200, 40)}
     ,{options: {floorCount: 31, elevatorCount: 10, spawnRate: 3.5, elevatorCapacities: [6, 8], elevatorSpeeds: [6, 5]}, condition: requireUserCountWithAvgWaitTime(3500, 20)}
-    ,{options: {floorCount: 200, elevatorCount: 60, spawnRate: 18.0, elevatorCapacities: [16, 20], elevatorSpeeds: [11, 9], startFloors: [0, 40, 80, 120, 160]}, condition: requireDemo()}
+    ,{options: {floorCount: 200, elevatorCount: 50, spawnRate: 16.0, elevatorCapacities: [16, 20], elevatorSpeeds: [11, 9], startFloors: [0, 40, 80, 120, 160]}, condition: requireDemo()}
     ,{options: {floorCount: 10, elevatorCount: 3, spawnRate: 0.0, elevatorCapacities: [10]}, condition: requireSandbox()}
 ];
 /* jshint laxcomma:false */
