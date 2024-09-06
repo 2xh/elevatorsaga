@@ -58,14 +58,15 @@ button {
 }
 
 .blink {
-  -webkit-animation: blink 0.5s steps(3, start) infinite;
-  animation: blink 0.5s steps(3, start) infinite;
+    -webkit-animation: blink 0.5s steps(2, start) infinite;
+    animation: blink 0.5s steps(2, start) infinite;
+    text-decoration: blink;
 }
 @keyframes blink {
-  to { visibility: hidden; }
+    to { visibility: hidden; }
 }
 @-webkit-keyframes blink {
-  to { visibility: hidden; }
+    to { visibility: hidden; }
 }
 
 .invisible {
@@ -159,8 +160,13 @@ pre.cm-s-default, .CodeMirror {
     position: relative;
     text-align: center;
     height: 100%;
+    color: white;
     background-color: rgba(44, 44, 44, 0.6);
     z-index: 5;
+}
+
+.feedback a {
+    color: white;
 }
 
 .movable {
@@ -279,7 +285,9 @@ pre.cm-s-default, .CodeMirror {
     font-size: 1.25em;
     line-height: 50px;
     padding-left: 60px;
+    white-space: nowrap;
     color: rgba(255, 255, 255, 0.25);
+    z-index: 2;
 }
 .floor .buttonindicator .activated {
     color: lime;
@@ -291,6 +299,7 @@ pre.cm-s-default, .CodeMirror {
     font-size: 1.5em;
     line-height: 50px;
     padding-left: 10px;
+    z-index: 2;
 }
 
 .footer {

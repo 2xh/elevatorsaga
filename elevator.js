@@ -6,8 +6,8 @@ function Elevator(speedFloorsPerSec, floorCount, floorHeight, maxUsers, errorHan
     var elevator = this;
 
     elevator.maxSpeed = floorHeight * speedFloorsPerSec;
-    elevator.ACCELERATION = elevator.maxSpeed;
-    elevator.DECELERATION = elevator.maxSpeed * 1.25;
+    elevator.ACCELERATION = floorHeight * Math.min(speedFloorsPerSec / 2, 4);
+    elevator.DECELERATION = elevator.ACCELERATION * 1.25;
     elevator.floorCount = floorCount;
     elevator.floorHeight = floorHeight;
     elevator.maxUsers = maxUsers || 6;
@@ -93,7 +93,7 @@ Elevator.prototype.updateElevatorMovement = function(dt) {
     var destinationDiff = this.destinationY - this.y;
     var directionSign = Math.sign(destinationDiff);
     var velocitySign = Math.sign(this.velocityY);
-    var acceleration = this.ACCELERATION * Math.min(directionSign * destinationDiff, 1);
+    var acceleration = this.ACCELERATION * Math.min(directionSign * destinationDiff / this.floorHeight, 1);
 
     if(directionSign === velocitySign) {
         // Moving in correct direction
