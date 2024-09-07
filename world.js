@@ -105,7 +105,6 @@ var createWorldCreator = function() {
                 world.transportedCounter++;
                 world.maxWaitTime = Math.max(world.maxWaitTime, world.elapsedTime - user.spawnTimestamp);
                 world.avgWaitTime = (world.avgWaitTime * (world.transportedCounter - 1) + (world.elapsedTime - user.spawnTimestamp)) / world.transportedCounter;
-                recalculateStats();
             });
             user.updateDisplayPosition(true);
         };
@@ -153,7 +152,7 @@ var createWorldCreator = function() {
             world.floors[i].on("up_button_pressed down_button_pressed", handleButtonRepressing);
         };
 
-        var elapsedSinceSpawn = 1.001/options.spawnRate;
+        var elapsedSinceSpawn = 1.0/options.spawnRate;
         var elapsedSinceStatsUpdate = 0.0;
 
         // Main update function
@@ -161,7 +160,7 @@ var createWorldCreator = function() {
             world.elapsedTime += dt;
             elapsedSinceSpawn += dt;
             elapsedSinceStatsUpdate += dt;
-            while(elapsedSinceSpawn > 1.0/options.spawnRate) {
+            while(elapsedSinceSpawn >= 1.0/options.spawnRate) {
                 elapsedSinceSpawn -= 1.0/options.spawnRate;
                 registerUser(creator.spawnUserRandomly(options.floorCount, world.floorHeight, world.floors, options.lobbyPossibility));
             }
@@ -177,7 +176,9 @@ var createWorldCreator = function() {
             for(var users=world.users, i=0, len=users.length; i < len; ++i) {
                 var u = users[i];
                 u.update(dt);
-                world.maxWaitTime = Math.max(world.maxWaitTime, world.elapsedTime - u.spawnTimestamp);
+                if(!u.done) {
+                    world.maxWaitTime = Math.max(world.maxWaitTime, world.elapsedTime - u.spawnTimestamp);
+                }
             };
 
             for(var users=world.users, i=world.users.length-1; i>=0; i--) {

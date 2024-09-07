@@ -82,7 +82,7 @@ var requireSandbox = function() {
 var challenges = [
     {options: {floorCount: 3, elevatorCount: 1, spawnRate: 11.0, elevatorCapacities: [100]}, condition: requireUserCountWithinTime(540, 60)}
     ,{options: {floorCount: 7, elevatorCount: 1, spawnRate: 0.5, elevatorCapacities: [7], lobbyPossibility: 0.2}, condition: requireUserCountWithinTime(25, 70)}
-    ,{options: {floorCount: 5, elevatorCount: 1, spawnRate: 0.2, startFloors: [4]}, condition: requireUserCountWithMaxWaitTime(20, 20)}
+    ,{options: {floorCount: 5, elevatorCount: 1, spawnRate: 0.1, startFloors: [4]}, condition: requireUserCountWithMaxWaitTime(20, 12)}
     ,{options: {floorCount: 13, elevatorCount: 2, spawnRate: 1.1, elevatorCapacities: [6, 10], startFloors: [0, 12]}, condition: requireUserCountWithinTime(50, 75)}
     ,{options: {floorCount: 12, elevatorCount: 4, spawnRate: 1.7, elevatorSpeeds: [6], startFloors: [0, 11]}, condition: requireUserCountWithinTime(100, 75)}
     ,{options: {floorCount: 4, elevatorCount: 2, spawnRate: 0.8}, condition: requireUserCountWithinMoves(75, 35)}

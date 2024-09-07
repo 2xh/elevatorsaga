@@ -204,6 +204,17 @@ describe("Elevator Saga", function() {
 	                        expect(challengeReq.evaluate(fakeWorld)).toBe(false);
 	                });
 	        });
+	        describe("requireUserCountWithAvgWaitTime", function(){
+	                it("evaluates correctly", function() {
+	                        var challengeReq = requireUserCountWithAvgWaitTime(10, 4.0);
+	                        expect(challengeReq.evaluate(fakeWorld)).toBe(null);
+	                        fakeWorld.transportedCounter = 11;
+	                        fakeWorld.avgWaitTime = 4.1;
+	                        expect(challengeReq.evaluate(fakeWorld)).toBe(false);
+	                        fakeWorld.avgWaitTime = 3.9;
+	                        expect(challengeReq.evaluate(fakeWorld)).toBe(true);
+	                });
+	        });
 	});
 
 	describe("Elevator object", function() {
@@ -334,14 +345,14 @@ describe("Elevator Saga", function() {
 			expect(e.getExactCurrentFloor()).toBeLessThan(1.15, "current floor");
 		});
 		it("doesnt overshoot too much when stopping at floors", function() {
-			_.each(_.range(60, 120, 2.32133), function(updatesPerSecond) {
+			_.each(_.range(60, 120, 2), function(updatesPerSecond) {
 				var STEPSIZE = 1.0 / updatesPerSecond;
 				e.setFloorPosition(1);
 				e.moveToFloor(3);
 				timeForwarder(5.0, STEPSIZE, function(dt) {
 					e.update(dt);
 					e.updateElevatorMovement(dt);
-					expect(e.getExactCurrentFloor()).toBeLessThanOrEqual(3.003, "(STEPSIZE is " + STEPSIZE + ")");
+					expect(e.getExactCurrentFloor()).toBeLessThanOrEqual(3.002, "(STEPSIZE is " + STEPSIZE + ")");
 				});
 				expect(e.getExactCurrentFloor()).toEqual(3.0);
 			});
@@ -380,7 +391,7 @@ describe("Elevator Saga", function() {
 				e.on("idle", handlers.someHandler);
 				e.destinationQueue = [1, 2];
 				e.checkDestinationQueue();
-			        timeForwarder(2, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
+			        timeForwarder(3, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
 				expect(handlers.someHandler).not.toHaveBeenCalled();
 			        timeForwarder(4, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
 				expect(handlers.someHandler).toHaveBeenCalled();
