@@ -203,7 +203,7 @@ var createWorldCreator = function() {
 
         world.unWind = function() {
             console.log("Unwinding", world);
-            _.each(world.elevators.concat(world.users).concat(world.floors).push(world), function(obj) {
+            _.each(world.elevators.concat(world.users).concat(world.floors).concat(world), function(obj) {
                 obj.off("*");
             });
             world.challengeEnded = true;
@@ -228,45 +228,46 @@ var createWorldController = function(dtMax) {
     var controller = riot.observable({});
     controller.timeScale = 1.0;
     controller.isPaused = true;
-    controller.start = function(world, codeObj, animationFrameRequester, autoStart) {
-        controller.isPaused = true;
+    controller.start = function(world, codeObj, animationFrameRequester) {
         var lastT = null;
         var firstUpdate = true;
         world.on("usercode_error", controller.handleUserCodeError);
+        controller.update = function() {
+            return animationFrameRequester(updater);
+        }
         var updater = function(t) {
-            if(!controller.isPaused && !world.challengeEnded && lastT !== null) {
+            if(!controller.isPaused && !world.challengeEnded) {
                 if(firstUpdate) {
-                    firstUpdate = false;
                     // This logic prevents infite loops in usercode from breaking the page permanently - don't evaluate user code until game is unpaused.
                     try {
                         codeObj.init(world.elevators, world.floors);
+                        firstUpdate = false;
                         world.init();
                     } catch(e) { controller.handleUserCodeError(e); }
+                } else if(lastT !== null) {
+                    var dt = (t - lastT);
+                    var scaledDt = dt * 0.001 * controller.timeScale;
+                    scaledDt = Math.min(scaledDt, dtMax * 3600 * controller.timeScale); // Limit to prevent unhealthy substepping
+                    try {
+                        codeObj.update(scaledDt, world.elevators, world.floors);
+                    } catch(e) { controller.handleUserCodeError(e); }
+                    while(scaledDt > 0.0 && !world.challengeEnded) {
+                        var thisDt = Math.min(dtMax, scaledDt);
+                        world.update(thisDt);
+                        scaledDt -= thisDt;
+                    }
+                    world.updateDisplayPositions();
+                    world.trigger("stats_display_changed"); // TODO: Trigger less often for performance reasons etc
                 }
-
-                var dt = (t - lastT);
-                var scaledDt = dt * 0.001 * controller.timeScale;
-                scaledDt = Math.min(scaledDt, dtMax * 3600 * controller.timeScale); // Limit to prevent unhealthy substepping
-                try {
-                    codeObj.update(scaledDt, world.elevators, world.floors);
-                } catch(e) { controller.handleUserCodeError(e); }
-                while(scaledDt > 0.0 && !world.challengeEnded) {
-                    var thisDt = Math.min(dtMax, scaledDt);
-                    world.update(thisDt);
-                    scaledDt -= thisDt;
-                }
-                world.updateDisplayPositions();
-                world.trigger("stats_display_changed"); // TODO: Trigger less often for performance reasons etc
-            }
-            lastT = t;
-            if(!world.challengeEnded) {
-                animationFrameRequester(updater);
+                lastT = t;
+                controller.update();
+            } else {
+                lastT = null;
             }
         };
-        if(autoStart) {
-            controller.setPaused(false);
+        if(!controller.isPaused) {
+            controller.update();
         }
-        animationFrameRequester(updater);
     };
 
     controller.handleUserCodeError = function(e) {
@@ -277,6 +278,9 @@ var createWorldController = function(dtMax) {
 
     controller.setPaused = function(paused) {
         controller.isPaused = paused;
+        if(!paused) {
+            controller.update();
+        }
         controller.trigger("timescale_changed");
     };
     controller.setTimeScale = function(timeScale) {

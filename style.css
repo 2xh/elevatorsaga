@@ -88,7 +88,7 @@ button {
     float: left;
 }
 
-.right {
+.right, .statscontainer .value {
     float: right;
 }
 
@@ -136,18 +136,13 @@ pre.cm-s-default, .CodeMirror {
     top: 0;
     right: 0px;
     width: 180px;
-    padding: 20px;
+    padding: 15px 20px;
+    line-height: 20px;
     z-index: 1;
 }
 
-.statscontainer div, .statscontainer span {
-    position: absolute;
-    display: block;
-    width: 180px;
-}
-
-.statscontainer .value {
-    text-align: right;
+.statscontainer div {
+    clear: right;
 }
 
 .feedbackcontainer {

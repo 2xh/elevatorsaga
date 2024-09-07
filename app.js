@@ -200,6 +200,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         app.currentChallengeIndex = challengeIndex;
         app.world = app.worldCreator.createWorld(challenges[challengeIndex].options);
+        app.worldController.isPaused = !autoStart;
         window.world = app.world;
 
         clearAll([$world, $feedback]);
@@ -231,7 +232,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         var codeObj = editor.getCodeObj();
         console.log("Starting...");
-        app.worldController.start(app.world, codeObj, window.requestAnimationFrame, autoStart);
+        app.worldController.start(app.world, codeObj, window.requestAnimationFrame);
     };
 
     editor.on("apply_code", function() {

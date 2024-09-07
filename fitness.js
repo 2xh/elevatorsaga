@@ -30,7 +30,8 @@ function calculateFitness(challenge, codeObj, stepSize, stepsToSimulate) {
         result.transportedCount = world.transportedCounter;
     });
 
-    controller.start(world, codeObj, frameRequester.register, true);
+    controller.isPaused = false;
+    controller.start(world, codeObj, frameRequester.register);
 
     for(var stepCount=0; stepCount < stepsToSimulate && !controller.isPaused; stepCount++) {
         frameRequester.trigger();
