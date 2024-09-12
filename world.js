@@ -1,5 +1,4 @@
-
-
+"use strict";
 
 var createWorldCreator = function() {
     var creator = {};
@@ -153,14 +152,12 @@ var createWorldCreator = function() {
         };
 
         var elapsedSinceSpawn = 1.0/options.spawnRate;
-        var elapsedSinceStatsUpdate = 0.0;
 
         // Main update function
         world.update = function(dt) {
             world.elapsedTime += dt;
             elapsedSinceSpawn += dt;
-            elapsedSinceStatsUpdate += dt;
-            while(elapsedSinceSpawn >= 1.0/options.spawnRate) {
+            while(elapsedSinceSpawn > 1.0/options.spawnRate) {
                 elapsedSinceSpawn -= 1.0/options.spawnRate;
                 registerUser(creator.spawnUserRandomly(options.floorCount, world.floorHeight, world.floors, options.lobbyPossibility));
             }

@@ -1,3 +1,5 @@
+"use strict";
+
 function User(weight) {
     newGuard(this, User);
     Movable.call(this);

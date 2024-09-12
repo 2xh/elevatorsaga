@@ -1,3 +1,4 @@
+"use strict";
 
 document.addEventListener("DOMContentLoaded", function() {
     var $ = function(selectors){return document.querySelector(selectors)};

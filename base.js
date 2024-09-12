@@ -1,3 +1,5 @@
+"use strict";
+
 // Console shim
 (function () {
     var f = function () {};
@@ -62,7 +64,7 @@ var createFrameRequester = function(timeStep) {
 var getCodeObjFromCode = function(code) {
     code = "(" + code + ")";
     /* jslint evil:true */
-    obj = eval(code);
+    var obj = eval(code);
     /* jshint evil:false */
     if(typeof obj.init !== "function") {
         obj.init = function(){};

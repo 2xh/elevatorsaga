@@ -1,3 +1,4 @@
+"use strict";
 
 Math.linearInterpolate = function(value0, value1, x) {
     return value0 + (value1 - value0) * x;

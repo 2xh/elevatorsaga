@@ -1,3 +1,4 @@
+"use strict";
 
 function Floor(obj, floorLevel, yPosition, errorHandler) {
     var floor = riot.observable(obj);

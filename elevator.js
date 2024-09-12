@@ -1,3 +1,5 @@
+"use strict";
+
 function newElevStateHandler(elevator) { elevator.handleNewState(); }
 
 function Elevator(speedFloorsPerSec, floorCount, floorHeight, maxUsers, errorHandler) {
@@ -6,7 +8,7 @@ function Elevator(speedFloorsPerSec, floorCount, floorHeight, maxUsers, errorHan
     var elevator = this;
 
     elevator.maxSpeed = floorHeight * speedFloorsPerSec;
-    elevator.ACCELERATION = floorHeight * Math.min(speedFloorsPerSec / 2, 4);
+    elevator.ACCELERATION = floorHeight * Math.max(Math.log(speedFloorsPerSec) / Math.LN2, 3);
     elevator.DECELERATION = elevator.ACCELERATION * 1.25;
     elevator.floorCount = floorCount;
     elevator.floorHeight = floorHeight;
@@ -93,12 +95,12 @@ Elevator.prototype.updateElevatorMovement = function(dt) {
     var destinationDiff = this.destinationY - this.y;
     var directionSign = Math.sign(destinationDiff);
     var velocitySign = Math.sign(this.velocityY);
-    var acceleration = this.ACCELERATION * Math.min(directionSign * destinationDiff / this.floorHeight, 1);
+    var acceleration = Math.min(directionSign * destinationDiff * 2, this.ACCELERATION);
 
     if(directionSign === velocitySign) {
         // Moving in correct direction
         var distanceNeededToStop = this.accelDistance(0.0);
-        if(distanceNeededToStop * 1.1 < -directionSign * destinationDiff) {
+        if(distanceNeededToStop * 1.05 < -directionSign * destinationDiff) {
             // Slow down
             var requiredDeceleration = this.accelNeeded(0.0, destinationDiff);
             var deceleration = Math.min(this.DECELERATION, -directionSign * requiredDeceleration);

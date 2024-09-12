@@ -1,3 +1,4 @@
+"use strict";
 
 var requireUserCountWithinTime = function(userCount, timeLimit) {
     return {
@@ -82,7 +83,7 @@ var requireSandbox = function() {
 var challenges = [
     {options: {floorCount: 3, elevatorCount: 1, spawnRate: 11.0, elevatorCapacities: [100]}, condition: requireUserCountWithinTime(540, 60)}
     ,{options: {floorCount: 7, elevatorCount: 1, spawnRate: 0.5, elevatorCapacities: [7], lobbyPossibility: 0.2}, condition: requireUserCountWithinTime(25, 70)}
-    ,{options: {floorCount: 5, elevatorCount: 1, spawnRate: 0.1, startFloors: [4]}, condition: requireUserCountWithMaxWaitTime(20, 12)}
+    ,{options: {floorCount: 5, elevatorCount: 1, spawnRate: 0.1, startFloors: [4]}, condition: requireUserCountWithMaxWaitTime(10, 10)}
     ,{options: {floorCount: 13, elevatorCount: 2, spawnRate: 1.1, elevatorCapacities: [6, 10], startFloors: [0, 12]}, condition: requireUserCountWithinTime(50, 75)}
     ,{options: {floorCount: 12, elevatorCount: 4, spawnRate: 1.7, elevatorSpeeds: [6], startFloors: [0, 11]}, condition: requireUserCountWithinTime(100, 75)}
     ,{options: {floorCount: 4, elevatorCount: 2, spawnRate: 0.8}, condition: requireUserCountWithinMoves(75, 35)}
@@ -96,9 +97,9 @@ var challenges = [
     ,{options: {floorCount: 21, elevatorCount: 4, spawnRate: 1.2, elevatorCapacities: [8], elevatorSpeeds: [4, 8], startFloors: [0, 20], lobbyPossibility: 0.8}, condition: requireUserCountWithinTime(200, 180)}
     ,{options: {floorCount: 21, elevatorCount: 5, spawnRate: 2.0, elevatorCapacities: [10], elevatorSpeeds: [4, 8], startFloors: [20, 0], lobbyPossibility: 0.2}, condition: requireUserCountWithinTimeWithMaxWaitTime(240, 150, 60)}
     ,{options: {floorCount: 41, elevatorCount: 8, spawnRate: 2.6, elevatorCapacities: [8, 12], elevatorSpeeds: [8, 6]}, condition: requireUserCountWithinTime(700, 300)}
-    ,{options: {floorCount: 25, elevatorCount: 8, spawnRate: 1.7, elevatorCapacities: [6, 8]}, condition: requireUserCountWithinTimeWithMaxWaitTime(2000, 1200, 60)}
-    ,{options: {floorCount: 31, elevatorCount: 10, spawnRate: 3.6, elevatorCapacities: [6, 8], elevatorSpeeds: [6, 5], lobbyPossibility: 0.3}, condition: requireUserCountWithAvgWaitTime(3600, 27)}
-    ,{options: {floorCount: 200, elevatorCount: 50, spawnRate: 12.0, elevatorCapacities: [16, 20], elevatorSpeeds: [11, 9], startFloors: [0, 40, 80, 120, 160], lobbyPossibility: 0.3}, condition: requireDemo()}
+    ,{options: {floorCount: 25, elevatorCount: 8, spawnRate: 1.7, elevatorCapacities: [6, 8]}, condition: requireUserCountWithinTimeWithMaxWaitTime(2000, 1200, 40)}
+    ,{options: {floorCount: 31, elevatorCount: 10, spawnRate: 3.6, elevatorCapacities: [6, 8], elevatorSpeeds: [6, 5], lobbyPossibility: 0.3}, condition: requireUserCountWithAvgWaitTime(3600, 26)}
+    ,{options: {floorCount: 200, elevatorCount: 50, spawnRate: 13.0, elevatorCapacities: [16, 20], elevatorSpeeds: [11, 9], startFloors: [0, 40, 80, 120, 160], lobbyPossibility: 0.3}, condition: requireDemo()}
     ,{options: {floorCount: 10, elevatorCount: 3, spawnRate: 0.0, elevatorCapacities: [10]}, condition: requireSandbox()}
 ];
 /* jshint laxcomma:false */

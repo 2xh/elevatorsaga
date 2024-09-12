@@ -1,4 +1,4 @@
-
+"use strict";
 
 var timeForwarder = function(dt, stepSize, fn) {
 	var accumulated = 0.0;
@@ -336,14 +336,14 @@ describe("Elevator Saga", function() {
 			var passingFloorEventCount = 0;
 			e.on("passing_floor", function(floorNum, direction) {
 				expect(floorNum).toBe(1, "floor being passed");
-				expect(direction).toBeLessThanOrEqual(1, "direction");
+				expect(direction).toBeGreaterThan(0, "direction");
 				passingFloorEventCount++;
 				e.moveToFloor(e.getExactFutureFloorIfStopped());
 			});
 			e.moveToFloor(2);
 			timeForwarder(3.0, 0.01401, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
-			expect(passingFloorEventCount).toBeGreaterThan(0, "event count");
-			expect(e.getExactCurrentFloor()).toBeLessThan(1.15, "current floor");
+			expect(passingFloorEventCount).toEqual(1, "event count");
+			expect(e.getExactCurrentFloor()).toBeLessThan(1.01, "current floor");
 		});
 		it("doesnt overshoot too much when stopping at floors", function() {
 			_.each(_.range(60, 120, 2), function(updatesPerSecond) {
@@ -367,7 +367,7 @@ describe("Elevator Saga", function() {
 			expect(e.y).not.toBe(originalY);
 
 			e.moveToFloor(0);
-			timeForwarder(0.5, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
+			timeForwarder(0.9, 0.015, function(dt) {e.update(dt); e.updateElevatorMovement(dt);});
 			var whenMovingY = e.y;
 
 			e.stop();
