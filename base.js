@@ -35,16 +35,18 @@ if(!self.requestAnimationFrame) {
     }
 }
 
-Element.prototype.addClass = function(c) {
-    if((" " + this.className + " ").indexOf(" " + c + " ") === -1) {
-        this.className += (this.className ? " " : "") + c;
+if(self.Element) {
+    Element.prototype.addClass = function(c) {
+        if((" " + this.className + " ").indexOf(" " + c + " ") === -1) {
+            this.className += (this.className ? " " : "") + c;
+        }
+        return this;
     }
-    return this;
-}
 
-Element.prototype.removeClass = function(c) {
-    this.className = (" " + this.className + " ").replace(" " + c + " ", " ").trim();
-    return this;
+    Element.prototype.removeClass = function(c) {
+        this.className = (" " + this.className + " ").replace(" " + c + " ", " ").trim();
+        return this;
+    }
 }
 
 var newGuard = function(obj, type) {
