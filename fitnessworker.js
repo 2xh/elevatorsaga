@@ -1,5 +1,5 @@
 "use strict";
-importScripts("libs/lodash.min.js", "libs/riot.js", "libs/unobservable.js")
+importScripts("libs/lodash.min.js", "libs/riot.min.js", "libs/unobservable.js")
 importScripts("base.js", "movable.js", "floor.js", "user.js", "elevator.js", "world.js", "fitness.js");
 
 

@@ -97,7 +97,6 @@ var createWorldCreator = function() {
 
         var registerUser = function(user) {
             world.users.push(user);
-            user.updateDisplayPosition(true);
             user.spawnTimestamp = world.elapsedTime;
             world.trigger("new_user", user);
             user.on("exited_elevator", function() {
@@ -105,7 +104,7 @@ var createWorldCreator = function() {
                 world.maxWaitTime = Math.max(world.maxWaitTime, world.elapsedTime - user.spawnTimestamp);
                 world.avgWaitTime = (world.avgWaitTime * (world.transportedCounter - 1) + (world.elapsedTime - user.spawnTimestamp)) / world.transportedCounter;
             });
-            user.updateDisplayPosition(true);
+            user.updateDisplayPosition();
         };
 
         var handleElevAvailability = function(elevator) {
@@ -173,8 +172,15 @@ var createWorldCreator = function() {
             for(var users=world.users, i=0, len=users.length; i < len; ++i) {
                 var u = users[i];
                 u.update(dt);
-                if(!u.done) {
-                    world.maxWaitTime = Math.max(world.maxWaitTime, world.elapsedTime - u.spawnTimestamp);
+                if(!u.done && world.elapsedTime - u.spawnTimestamp > world.maxWaitTime - 3) {
+                    if(!u.longWait && world.elapsedTime >= 5) {
+                        u.longWait = true;
+                        u.trigger("new_display_state");
+                    }
+                    if(world.elapsedTime - u.spawnTimestamp >= world.maxWaitTime) {
+                        world.maxWaitTime = world.elapsedTime - u.spawnTimestamp;
+                        u.trigger("new_display_state");
+                    }
                 }
             };
 

@@ -7,6 +7,7 @@ function User(weight) {
     user.weight = weight;
     user.currentFloor = 0;
     user.destinationFloor = 0;
+    user.longWait = false;
     user.done = false;
     user.removeMe = false;
 };

@@ -8,18 +8,12 @@ function clearAll($elems) {
     });
 };
 
-function setTransformPos(elem, x, y) {
+function setPos(elem, x, y) {
     var style = "translate(" + x + "px," + y + "px) translateZ(0)";
     elem.style.transform = style;
     elem.style["-ms-transform"] = style;
     elem.style["-webkit-transform"] = style;
 };
-
-function updateUserState($user, user) {
-    setTransformPos($user, user.worldX, user.worldY);
-    if(user.done) { $user.addClass("leaving"); }
-};
-
 
 function presentStats($parent, world) {
 
@@ -114,7 +108,7 @@ function presentWorld($world, world, floorTempl, elevatorTempl, elevatorButtonTe
             });
         });
         e.on("new_display_state", function updateElevatorPosition() {
-            setTransformPos($elevator, e.worldX, e.worldY);
+            setPos($elevator, e.worldX, e.worldY);
         });
         e.on("new_current_floor", function update_current_floor(floor) {
             elem_floorindicator.textContent = floor;
@@ -140,7 +134,14 @@ function presentWorld($world, world, floorTempl, elevatorTempl, elevatorButtonTe
         var $user = document.createElement("span");
         $user.innerHTML = riot.render(userTempl, {u: user, state: user.done ? "leaving" : ""});
         $user = $user.childNodes[0];
-        user.on("new_display_state", function() { updateUserState($user, user); })
+        user.on("new_display_state", function() {
+            setPos($user, user.worldX, user.worldY);
+            if(user.done) { $user.addClass("leaving"); }
+            else if(user.longWait) {
+                $user.addClass("longwait");
+                if(world.elapsedTime - user.spawnTimestamp === world.maxWaitTime && world.elapsedTime >= 10) { $user.addClass("longestwait"); }
+            }
+        });
         user.on("removed", function() {
             $world.removeChild($user);
         });
@@ -150,19 +151,18 @@ function presentWorld($world, world, floorTempl, elevatorTempl, elevatorButtonTe
 
 
 function presentCodeStatus($parent, templ, error) {
-    console.log(error);
     var errorDisplay = error ? "block" : "none";
     var successDisplay = error ? "none" : "block";
-    var errorMessage = error;
-    if(error && error.stack) {
-        errorMessage = error.stack;
-        errorMessage = errorMessage.replace(/\n/g, "<br>");
+    var errorMessage = null;
+    if(error) {
+        errorMessage = (error.stack ? error.stack.indexOf(error.message) !== -1 ? error.stack : error.toString() + '\n' + error.stack : error.name + ': ' + error.message).replace(/\n/g, "<br>");
     }
+    console.log(errorMessage);
     var status = riot.render(templ, {errorMessage: errorMessage, errorDisplay: errorDisplay, successDisplay: successDisplay});
     $parent.innerHTML = status;
 };
 
 function makeDemoFullscreen() {
-    _.each(document.querySelectorAll("body .container > *:not(.world)"), function(e){e.style.visibility = "hidden"});
-    _.each(document.querySelectorAll("html, body, body .container, .world"), function(e){e.style.width = "100%", e.style.margin = 0, e.style.padding = 0});
+    _.each(document.querySelectorAll(".container > *:not(.world)"), function(e){e.style.visibility = "hidden"});
+    _.each(document.querySelectorAll(".container"), function(e){e.style.width = "100%", e.style.margin = 0, e.style.padding = 0});
 };

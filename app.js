@@ -144,6 +144,20 @@ document.addEventListener("DOMContentLoaded", function() {
     $("#button_apply").addEventListener("click", function() {
         returnObj.trigger("apply_code");
     });
+    $("#button_apply").addEventListener("contextmenu", function(e) {
+        var message = "Fitness options: <br>" + _.map(fitnessChallenges, function(r){ return JSON.stringify(r.options) + "<br>" }).join("");
+        $("#fitness_message").innerHTML = message;
+        var codeStr = cm.getValue();
+        fitnessSuite(codeStr, true, function(results) {
+            if(!results.error) {
+                message = "Fitness statistics: <br>Elapsed time: " + results[0].result.elapsedTime + "s;<br>" + _.map(results, function(r){ return r.options.description + ": Transported: " + r.result.transportedCount + "; Avg waiting time: " + r.result.avgWaitTime.toPrecision(4) + "s; Max waiting time: " + r.result.maxWaitTime.toPrecision(4) + "s; Moves: " + r.result.moveCount }).join(";<br>");
+            } else {
+                message = "Could not compute fitness due to error: " + results.error;
+            }
+            $("#fitness_message").innerHTML += message;
+        });
+        e.preventDefault();
+    });
     return returnObj;
     };
 
@@ -245,21 +259,6 @@ document.addEventListener("DOMContentLoaded", function() {
     editor.on("usercode_error", function(error) {
         presentCodeStatus($codestatus, codeStatusTempl, error);
     });
-    editor.on("change", function() {
-        $("#fitness_message").addClass("faded");
-        var codeStr = editor.getCode();
-        // fitnessSuite(codeStr, true, function(results) {
-        //     var message = "";
-        //     if(!results.error) {
-        //         message = "Fitness avg wait times: " + _.map(results, function(r){ return r.options.description + ": " + r.result.avgWaitTime.toPrecision(3) + "s" }).join("&nbsp&nbsp&nbsp");
-        //     } else {
-        //         message = "Could not compute fitness due to error: " + results.error;
-        //     }
-        //     $("#fitness_message").innerHTML = message;
-        //     $("#fitness_message").removeClass("faded");
-        // });
-    });
-    editor.trigger("change");
 
     var prepareChallenge = function() {
         var path = location.hash;
