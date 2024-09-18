@@ -145,16 +145,16 @@ document.addEventListener("DOMContentLoaded", function() {
         returnObj.trigger("apply_code");
     });
     $("#button_apply").addEventListener("contextmenu", function(e) {
-        var message = "Fitness options: <br>" + _.map(fitnessChallenges, function(r){ return JSON.stringify(r.options) + "<br>" }).join("");
-        $("#fitness_message").innerHTML = message;
+        var message = "Fitness options:\n" + _.map(fitnessChallenges, function(r){ return JSON.stringify(r.options) + "\n" }).join("");
+        $("#fitness_message").textContent = message;
         var codeStr = cm.getValue();
         fitnessSuite(codeStr, true, function(results) {
             if(!results.error) {
-                message = "Fitness statistics: <br>Elapsed time: " + results[0].result.elapsedTime + "s;<br>" + _.map(results, function(r){ return r.options.description + ": Transported: " + r.result.transportedCount + "; Avg waiting time: " + r.result.avgWaitTime.toPrecision(4) + "s; Max waiting time: " + r.result.maxWaitTime.toPrecision(4) + "s; Moves: " + r.result.moveCount }).join(";<br>");
+                message = "Fitness statistics:\nElapsed time: " + results[0].result.elapsedTime + "s;\n" + _.map(results, function(r){ return r.options.description + ": Transported: " + r.result.transportedCount + "; Avg waiting time: " + r.result.avgWaitTime.toPrecision(4) + "s; Max waiting time: " + r.result.maxWaitTime.toPrecision(4) + "s; Moves: " + r.result.moveCount }).join(";\n");
             } else {
                 message = "Could not compute fitness due to error: " + results.error;
             }
-            $("#fitness_message").innerHTML += message;
+            $("#fitness_message").textContent += message;
         });
         e.preventDefault();
     });
@@ -211,14 +211,24 @@ document.addEventListener("DOMContentLoaded", function() {
     app.startChallenge = function(challengeIndex, autoStart) {
         if(typeof app.world !== "undefined") {
             app.world.unWind();
+            clearAll([$challenge, $world, $feedback]);
             // TODO: Investigate if memory leaks happen here
         }
         app.currentChallengeIndex = challengeIndex;
+        if(!challenges[challengeIndex]) {
+            var ch;
+            if(!(ch = prompt("Challenge " + (challengeIndex + 1) + " not found, input options in JSON format to create one:"))) { return; }
+            try {
+                challenges[challengeIndex] = {options: JSON.parse(ch), condition: requireNothing()};
+            } catch(e) {
+                alert("Creation failed: " + e.toString());
+                return;
+            }
+        }
         app.world = app.worldCreator.createWorld(challenges[challengeIndex].options);
         app.worldController.isPaused = !autoStart;
         window.world = app.world;
 
-        clearAll([$world, $feedback]);
         presentStats($stats, app.world);
         presentChallenge($challenge, challenges[challengeIndex], app, app.world, app.worldController, challengeIndex + 1, challengeTempl);
         presentWorld($world, app.world, floorTempl, elevatorTempl, elevatorButtonTempl, userTempl);
@@ -264,7 +274,7 @@ document.addEventListener("DOMContentLoaded", function() {
         var path = location.hash;
         params = _.reduce(path.split(","), function(result, p) {
             var match = p.match(/(\w+)=(\w+$)/);
-            if(match) { result[match[1]] = match[2]; } return result;
+            if(match) { result[match[1].toLowerCase()] = match[2].toLowerCase(); } return result;
         }, {});
         var requestedChallenge = 0;
         var autoStart = false;
@@ -277,19 +287,21 @@ document.addEventListener("DOMContentLoaded", function() {
         _.each(params, function(val, key) {
             if(key === "challenge") {
                 requestedChallenge = _.parseInt(val) - 1;
-                if(requestedChallenge < 0 || requestedChallenge >= challenges.length) {
-                    console.log("Invalid challenge index", requestedChallenge);
-                    console.log("Defaulting to first challenge");
-                    requestedChallenge = 0;
+                if(requestedChallenge < 0) {
+                    console.log("Invalid challenge index:", requestedChallenge);
+                    console.log("Defaulting to last challenge");
+                    requestedChallenge = challenges.length - 1;
+                } else if(requestedChallenge > challenges.length) {
+                    console.log("No such challenge:", requestedChallenge);
                 }
             } else if(key === "autostart") {
-                autoStart = val === "false" ? false : true;
+                autoStart = !(val === "false" || val === "0" || val === "null");
             } else if(key === "timescale") {
                 timeScale = parseFloat(val);
             } else if(key === "devtest") {
                 editor.setDevTestCode();
             } else if(key === "fullscreen") {
-                makeDemoFullscreen();
+                makeDemoFullscreen(!(val === "false" || val === "0" || val === "null"));
             }
         });
         app.worldController.setTimeScale(timeScale);

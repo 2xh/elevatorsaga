@@ -73,14 +73,18 @@ button {
     color: gray;
     font-size: 0.75em;
     margin: 0.75em 1em;
+    word-break: break-all;
+    white-space: pre-line;
 }
 
 .left {
     float: left;
+    word-break: break-all;
 }
 
 .right, .statscontainer .value {
     float: right;
+    word-break: break-all;
 }
 
 .header a {

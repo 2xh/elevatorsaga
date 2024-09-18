@@ -47,12 +47,14 @@ function presentChallenge($parent, challenge, app, world, worldController, chall
     $parent.querySelector(".startstop").addEventListener("click", function() {
         app.startStopOrRestart();
     });
-    $parent.querySelector(".timescale_increase").addEventListener("click", function(e) {
+    $parent.querySelector(".startstop").addEventListener("contextmenu", function(e) {
         e.preventDefault();
+        document.querySelector("#save_message").textContent = "Current challenge options:\n" + JSON.stringify(challenge.options);
+    });
+    $parent.querySelector(".timescale_increase").addEventListener("click", function(e) {
         worldController.setTimeScale(Math.round(worldController.timeScale * 2));
     });
     $parent.querySelector(".timescale_decrease").addEventListener("click", function(e) {
-        e.preventDefault();
         worldController.setTimeScale(Math.round(worldController.timeScale / 2));
     });
 };
@@ -155,14 +157,19 @@ function presentCodeStatus($parent, templ, error) {
     var successDisplay = error ? "none" : "block";
     var errorMessage = null;
     if(error) {
-        errorMessage = (error.stack ? error.stack.indexOf(error.message) !== -1 ? error.stack : error.toString() + '\n' + error.stack : error.name + ': ' + error.message).replace(/\n/g, "<br>");
+        errorMessage = error.stack ? error.stack.indexOf(error.message) !== -1 ? error.stack : error.toString() + '\n' + error.stack : error.name + ': ' + error.message;
     }
     console.log(errorMessage);
+    if(errorMessage) {
+        errorMessage = errorMessage.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
     var status = riot.render(templ, {errorMessage: errorMessage, errorDisplay: errorDisplay, successDisplay: successDisplay});
     $parent.innerHTML = status;
 };
 
-function makeDemoFullscreen() {
-    _.each(document.querySelectorAll(".container > *:not(.world)"), function(e){e.style.visibility = "hidden"});
-    _.each(document.querySelectorAll(".container"), function(e){e.style.width = "100%", e.style.margin = 0, e.style.padding = 0});
+function makeDemoFullscreen(value) {
+    _.each(document.querySelectorAll(".container > *:not(.world)"), function(e){e.style.visibility = value ? "hidden" : ""});
+    var e = document.querySelector(".container");
+    if(value) {e.style.width = "100%", e.style.margin = 0, e.style.padding = 0; }
+    else {e.style.width = "", e.style.margin = "", e.style.padding = ""; }
 };
