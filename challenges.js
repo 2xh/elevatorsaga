@@ -101,7 +101,7 @@ var challenges = [
     ,{options: {floorCount: 41, elevatorCount: 8, spawnRate: 2.6, elevatorCapacities: [8, 12], elevatorSpeeds: [8, 6]}, condition: requireUserCountWithinTime(700, 300)}
     ,{options: {floorCount: 25, elevatorCount: 8, spawnRate: 1.7, elevatorCapacities: [6, 8]}, condition: requireUserCountWithinTimeWithMaxWaitTime(2000, 1200, 40)}
     ,{options: {floorCount: 31, elevatorCount: 10, spawnRate: 3.6, elevatorCapacities: [6, 8], elevatorSpeeds: [6, 5], lobbyPossibility: 0.3}, condition: requireUserCountWithAvgWaitTime(3600, 26)}
-    ,{options: {floorCount: 200, elevatorCount: 50, spawnRate: 13.0, elevatorCapacities: [16, 20], elevatorSpeeds: [11, 9], startFloors: [0, 40, 80, 120, 160], lobbyPossibility: 0.3}, condition: requireDemo()}
+    ,{options: {floorCount: 200, elevatorCount: 40, spawnRate: 10.0, elevatorCapacities: [16, 20], elevatorSpeeds: [11, 9], startFloors: [0, 40, 80, 120, 160], lobbyPossibility: 0.3}, condition: requireDemo()}
     ,{options: {floorCount: 10, elevatorCount: 3, spawnRate: 0.0, elevatorCapacities: [10]}, condition: requireNothing()}
 ];
 /* jshint laxcomma:false */
