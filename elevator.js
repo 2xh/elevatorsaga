@@ -2,16 +2,16 @@
 
 function newElevStateHandler(elevator) { elevator.handleNewState(); }
 
-function Elevator(speedFloorsPerSec, floorCount, floorHeight, maxUsers, errorHandler) {
+function Elevator(speedFloorsPerSec, floors, maxUsers, errorHandler) {
     newGuard(this, Elevator);
     Movable.call(this);
     var elevator = this;
 
-    elevator.maxSpeed = floorHeight * speedFloorsPerSec;
-    elevator.ACCELERATION = floorHeight * Math.max(Math.log(speedFloorsPerSec) / Math.LN2, 3);
+    elevator.floors = floors;
+    elevator.height = floors.reduce(function(h, floor){ return Math.min(h, floor.height); }, floors[0].height);
+    elevator.maxSpeed = elevator.height * speedFloorsPerSec;
+    elevator.ACCELERATION = elevator.height * Math.max(Math.log(speedFloorsPerSec) / Math.LN2, 3);
     elevator.DECELERATION = elevator.ACCELERATION * 1.25;
-    elevator.floorCount = floorCount;
-    elevator.floorHeight = floorHeight;
     elevator.maxUsers = maxUsers || 6;
     elevator.currentFloor = 0;
     elevator.velocityY = 0.0;
@@ -22,13 +22,13 @@ function Elevator(speedFloorsPerSec, floorCount, floorHeight, maxUsers, errorHan
     elevator.destinationQueue = [];
 
     elevator.approachedFloor = elevator.currentFloor;
-    elevator.buttonStates = _.map(_.range(floorCount), function(e, i){ return false; });
+    elevator.buttonStates = _.map(_.range(elevator.floors.length), function(e, i){ return false; });
     elevator.moveCount = 0;
     elevator.removed = false;
     elevator.userSlots = _.map(_.range(elevator.maxUsers), function(user, i) {
-        return { pos: [(i * 8) - 4, 28], user: null};
+        return { pos: [(i * 8) - 4, elevator.height - 22], user: null};
     });
-    elevator.width = elevator.maxUsers * 8;
+    elevator.width = elevator.maxUsers * 9;
     elevator.destinationY = 0.0;
 
     elevator.tryTrigger = function(event, arg1, arg2, arg3, arg4) {
@@ -69,7 +69,7 @@ Elevator.prototype.userEntering = function(user) {
 };
 
 Elevator.prototype.pressFloorButton = function(floorNumber) {
-    floorNumber = Math.clamp(floorNumber, 0, this.floorCount - 1);
+    floorNumber = Math.clamp(floorNumber, 0, this.floors.length - 1);
     if(!this.buttonStates[floorNumber]) {
         this.buttonStates[floorNumber] = true;
         this.tryTrigger("floor_button_pressed", floorNumber);
@@ -168,7 +168,7 @@ Elevator.prototype.moveToFloor = function(floor) {
 };
 
 Elevator.prototype.goToFloor = function(floor) {
-    floor = Math.clamp(floor, 0, this.floorCount - 1);
+    floor = Math.clamp(floor, 0, this.floors.length - 1);
     if(!this.destinationQueue.length || this.destinationQueue[0] !== floor){
         this.destinationQueue.unshift(floor);
     }
@@ -212,11 +212,14 @@ Elevator.prototype.isSuitableForTravelBetween = function(fromFloorNum, toFloorNu
 };
 
 Elevator.prototype.getYPosOfFloor = function(floorNum) {
-    return (this.floorCount - 1) * this.floorHeight - floorNum * this.floorHeight;
+    var f = this.floors[Math.clamp(Math.floor(floorNum), 0, this.floors.length - 1)];
+    return f.yPosition - this.height + (f.level + 1 - floorNum) * f.height;
 };
 
 Elevator.prototype.getExactFloorOfYPos = function(y) {
-    return ((this.floorCount - 1) * this.floorHeight - y) / this.floorHeight;
+    var i = 0, f;
+    do { f = this.floors[i++]; } while(i < this.floors.length && f.yPosition > y + this.height);
+    return f.level + 1 + (f.yPosition - this.height - y) / f.height;
 };
 
 Elevator.prototype.getExactCurrentFloor = function() {
@@ -248,7 +251,7 @@ Elevator.prototype.loadFactor = function() {
 };
 
 Elevator.prototype.getMaxSpeed = function() {
-    return this.maxSpeed / this.floorHeight;
+    return this.maxSpeed / this.height;
 };
 
 Elevator.prototype.isFull = function() {

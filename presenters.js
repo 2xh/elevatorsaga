@@ -60,7 +60,7 @@ function presentChallenge($parent, challenge, app, world, worldController, chall
 };
 
 function presentFeedback($parent, feedbackTempl, world, title, message, url) {
-    $parent.innerHTML = riot.render(feedbackTempl, {title: title, message: message, url: url, paddingTop: world.floors.length * world.floorHeight * 0.2});
+    $parent.innerHTML = riot.render(feedbackTempl, {title: title, message: message, url: url});
     if(!url) {
         var a = $parent.querySelector("a");
         a.parentNode.removeChild(a);
@@ -68,7 +68,7 @@ function presentFeedback($parent, feedbackTempl, world, title, message, url) {
 };
 
 function presentWorld($world, world, floorTempl, elevatorTempl, elevatorButtonTempl, userTempl) {
-    $world.style.height = world.floorHeight * world.floors.length + "px";
+    $world.style.height = world.floors.totalHeight + "px";
 
     _.each(world.floors, function(f) {
         var $floor = document.createElement("span");

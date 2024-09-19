@@ -131,8 +131,7 @@ pre.cm-s-default, .CodeMirror {
     top: 0;
     right: 0px;
     width: 180px;
-    padding: 15px 20px;
-    line-height: 20px;
+    padding: 10px 20px;
     z-index: 1;
 }
 
@@ -202,7 +201,7 @@ pre.cm-s-default, .CodeMirror {
 .elevator {
     background-color: #4F8686;
     border: 2px solid white;
-    height: 46px;
+    box-sizing: border-box;
     z-index: 1;
 }
 
@@ -256,16 +255,16 @@ pre.cm-s-default, .CodeMirror {
 .floor {
     position: absolute;
     width: 100%;
-    height: 49px;
+    box-sizing: border-box;
     background-color: gray;
     background: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0.25), rgba(255,255,255,0.25), rgba(255,255,255,0.1)); /* Standard syntax */
-    border-bottom: 1px solid;
+    border-bottom: 2px solid;
 }
 
 .floor .buttonindicator {
     cursor: pointer;
     font-size: 1.25em;
-    line-height: 50px;
+    line-height: 35px;
     padding-left: 60px;
     white-space: nowrap;
     color: rgba(255, 255, 255, 0.25);
@@ -279,7 +278,7 @@ pre.cm-s-default, .CodeMirror {
     position: absolute;
     color: rgba(255, 255, 255, 0.25);
     font-size: 1.5em;
-    line-height: 50px;
+    line-height: 35px;
     padding-left: 10px;
     z-index: 2;
 }

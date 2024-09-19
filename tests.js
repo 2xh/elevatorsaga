@@ -220,11 +220,12 @@ describe("Elevator Saga", function() {
 
 	describe("Elevator object", function() {
 		var e = null;
+                var f = createWorldCreator().createFloors;
 		var floorCount = 4;
 		var floorHeight = 44;
 
 		beforeEach(function() {
-			e = new Elevator(1.5, floorCount, floorHeight);
+			e = new Elevator(1.5, f(floorCount, [floorHeight]));
 			e.setFloorPosition(0);
 		});
 

@@ -3,21 +3,22 @@
 var createWorldCreator = function() {
     var creator = {};
 
-    creator.createFloors = function(floorCount, floorHeight, errorHandler) {
-        var floors = _.map(_.range(floorCount), function(e, i) {
-            var yPos = (floorCount - 1 - i) * floorHeight;
-            var floor = Floor({}, i, yPos, errorHandler);
-            return floor;
-        });
+    creator.createFloors = function(floorCount, floorHeights, errorHandler) {
+        var floors = [], yPos = 0;
+        for(var f = floorCount - 1; f >= 0; f--) {
+            floors.unshift(Floor({}, f, yPos, floorHeights[f % floorHeights.length], errorHandler));
+            yPos += floors[0].height;
+        }
         return floors;
     };
-    creator.createElevators = function(elevatorCount, floorCount, floorHeight, elevatorCapacities, elevatorSpeeds, startFloors, errorHandler) {
+
+    creator.createElevators = function(elevatorCount, floors, elevatorCapacities, elevatorSpeeds, startFloors, errorHandler) {
         elevatorCapacities = elevatorCapacities || [6];
         elevatorSpeeds = elevatorSpeeds || [3];
         startFloors = startFloors || [0];
         var currentX = 160.0;
         var elevators = _.map(_.range(elevatorCount), function(e, i) {
-            var elevator = new Elevator(elevatorSpeeds[i%elevatorSpeeds.length], floorCount, floorHeight, elevatorCapacities[i%elevatorCapacities.length], errorHandler);
+            var elevator = new Elevator(elevatorSpeeds[i%elevatorSpeeds.length], floors, elevatorCapacities[i%elevatorCapacities.length], errorHandler);
 
             // Move to right x position
             elevator.moveTo(currentX, null);
@@ -44,7 +45,7 @@ var createWorldCreator = function() {
         return user;
     };
 
-    creator.spawnUserRandomly = function(floorCount, floorHeight, floors, lobbyPossibility) {
+    creator.spawnUserRandomly = function(floorCount, floors, lobbyPossibility) {
         if(lobbyPossibility == undefined) {
             lobbyPossibility = 0.5;
         }
@@ -68,17 +69,18 @@ var createWorldCreator = function() {
 
     creator.createWorld = function(options) {
         console.log("Creating world with options", options);
-        var defaultOptions = { floorHeight: 50, floorCount: 4, elevatorCount: 2, spawnRate: 0.5 };
+        var defaultOptions = { floorHeights: [35], floorCount: 4, elevatorCount: 2, spawnRate: 0.5 };
         options = _.defaults(_.clone(options), defaultOptions);
-        var world = {floorHeight: options.floorHeight, transportedCounter: 0};
+        var world = {};
         riot.observable(world);
 
         var handleUserCodeError = function(e) {
             world.trigger("usercode_error", e);
         }
 
-        world.floors = creator.createFloors(options.floorCount, world.floorHeight, handleUserCodeError);
-        world.elevators = creator.createElevators(options.elevatorCount, options.floorCount, world.floorHeight, options.elevatorCapacities, options.elevatorSpeeds, options.startFloors, handleUserCodeError);
+        world.floors = creator.createFloors(options.floorCount, options.floorHeights, handleUserCodeError);
+        world.floors.totalHeight = world.floors.reduce(function(h, floor){ return h + floor.height; }, 0);
+        world.elevators = creator.createElevators(options.elevatorCount, world.floors, options.elevatorCapacities, options.elevatorSpeeds, options.startFloors, handleUserCodeError);
         world.users = [];
         world.transportedCounter = 0;
         world.transportedPerSec = 0.0;
@@ -158,7 +160,7 @@ var createWorldCreator = function() {
             elapsedSinceSpawn += dt;
             while(elapsedSinceSpawn > 1.0/options.spawnRate) {
                 elapsedSinceSpawn -= 1.0/options.spawnRate;
-                registerUser(creator.spawnUserRandomly(options.floorCount, world.floorHeight, world.floors, options.lobbyPossibility));
+                registerUser(creator.spawnUserRandomly(options.floorCount, world.floors, options.lobbyPossibility));
             }
 
             // Use regular for loops for performance and memory friendlyness

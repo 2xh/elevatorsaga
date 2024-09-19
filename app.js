@@ -146,15 +146,15 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     $("#button_apply").addEventListener("contextmenu", function(e) {
         var message = "Fitness options:\n" + _.map(fitnessChallenges, function(r){ return JSON.stringify(r.options) + "\n" }).join("");
-        $("#fitness_message").textContent = message;
+        $("#fitness_message").textContent = message + "Simulating...";
         var codeStr = cm.getValue();
         fitnessSuite(codeStr, true, function(results) {
             if(!results.error) {
-                message = "Fitness statistics:\nElapsed time: " + results[0].result.elapsedTime + "s;\n" + _.map(results, function(r){ return r.options.description + ": Transported: " + r.result.transportedCount + "; Avg waiting time: " + r.result.avgWaitTime.toPrecision(4) + "s; Max waiting time: " + r.result.maxWaitTime.toPrecision(4) + "s; Moves: " + r.result.moveCount }).join(";\n");
+                message += "Fitness statistics:\nElapsed time: " + results[0].result.elapsedTime + "s;\n" + _.map(results, function(r){ return r.options.description + ": Transported: " + r.result.transportedCount + "; Avg waiting time: " + r.result.avgWaitTime.toPrecision(4) + "s; Max waiting time: " + r.result.maxWaitTime.toPrecision(4) + "s; Moves: " + r.result.moveCount }).join(";\n");
             } else {
-                message = "Could not compute fitness due to error: " + results.error;
+                message += "Could not compute fitness due to error: " + results.error;
             }
-            $("#fitness_message").textContent += message;
+            $("#fitness_message").textContent = message;
         });
         e.preventDefault();
     });

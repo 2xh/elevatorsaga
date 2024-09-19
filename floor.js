@@ -1,10 +1,11 @@
 "use strict";
 
-function Floor(obj, floorLevel, yPosition, errorHandler) {
+function Floor(obj, floorLevel, yPosition, floorHeight, errorHandler) {
     var floor = riot.observable(obj);
 
     floor.level = floorLevel;
     floor.yPosition = yPosition;
+    floor.height = floorHeight;
     floor.buttonStates = [false, false];
 
     // TODO: Ideally the floor should have a facade where tryTrigger is done
@@ -41,7 +42,7 @@ function Floor(obj, floorLevel, yPosition, errorHandler) {
     };
 
     floor.getSpawnPosY = function() {
-        return floor.yPosition + 30;
+        return floor.yPosition + floor.height - 22;
     };
 
     return floor;

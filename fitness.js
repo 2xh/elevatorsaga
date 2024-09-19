@@ -9,8 +9,8 @@ var requireFitness = function() {
 
 var fitnessChallenges = [
      {options: {description: "Small scenario", floorCount: 4, elevatorCount: 2, spawnRate: 0.6}, condition: requireFitness()}
-    ,{options: {description: "Medium scenario", floorCount: 6, elevatorCount: 3, spawnRate: 1.5, elevatorCapacities: [5]}, condition: requireFitness()}
-    ,{options: {description: "Large scenario", floorCount: 18, elevatorCount: 6, spawnRate: 1.9, elevatorCapacities: [8]}, condition: requireFitness()}
+    ,{options: {description: "Medium scenario", floorCount: 12, elevatorCount: 4, spawnRate: 2.0, elevatorCapacities: [8], elevatorSpeeds: [6]}, condition: requireFitness()}
+    ,{options: {description: "Large scenario", floorCount: 36, elevatorCount: 8, spawnRate: 3.2, elevatorCapacities: [10], elevatorSpeeds: [8], lobbyPossibility: 0.3}, condition: requireFitness()}
 ]
 
 // Simulation without visualisation
@@ -63,7 +63,7 @@ function doFitnessSuite(codeStr, runCount, time, step) {
         return {error: e.toString()};
     }
     console.log("Fitness testing code", codeObj);
-    time = time || 12000;
+    time = time || 36000;
     step = step || 1000.0/60.0;
     var error = null;
 
