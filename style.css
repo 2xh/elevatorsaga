@@ -262,11 +262,11 @@ pre.cm-s-default, .CodeMirror {
 }
 
 .floor .buttonindicator {
+    display: inline-block;
     cursor: pointer;
-    font-size: 1.25em;
-    line-height: 35px;
+    font-size: 0.75em;
     padding-left: 60px;
-    white-space: nowrap;
+    white-space: pre-line;
     color: rgba(255, 255, 255, 0.25);
     z-index: 2;
 }

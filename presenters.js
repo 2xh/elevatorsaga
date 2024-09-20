@@ -67,32 +67,31 @@ function presentFeedback($parent, feedbackTempl, world, title, message, url) {
     }
 };
 
-function presentWorld($world, world, floorTempl, elevatorTempl, elevatorButtonTempl, userTempl) {
+function presentWorld($world, world, floorTempl, elevatorTempl, buttonTempl, userTempl) {
     $world.style.height = world.floors.totalHeight + "px";
 
     _.each(world.floors, function(f) {
         var $floor = document.createElement("span");
         $floor.innerHTML = riot.render(floorTempl, f);
         $floor = $floor.childNodes[0];
-        var $up = $floor.querySelector(".up");
-        var $down = $floor.querySelector(".down");
-        f.on("buttonstate_change", function(buttonStates) {
-            buttonStates[0] ? $up.addClass("activated") : $up.removeClass("activated");
-            buttonStates[1] ? $down.addClass("activated") : $down.removeClass("activated");
+        $floor.querySelector(".buttonindicator").innerHTML = renderButtons(f.buttonStates);
+        var $buttons = $floor.querySelector(".buttonindicator").childNodes;
+        if($buttons.length > 10) { $buttons[Math.floor(($buttons.length - 1) / 2)].textContent += "\n"; }
+        _.each($buttons, function(b) {
+            b.addEventListener("click", function(){
+                f.pressButton(parseInt(this.textContent));
+            });
         });
-        $up.addEventListener("click", function() {
-            f.pressButton(1);
-        });
-        $down.addEventListener("click", function() {
-            f.pressButton(-1);
+        f.on("buttonstate_change", function(buttonStates, index) {
+            buttonStates[index] ? $buttons[index].addClass("activated") : $buttons[index].removeClass("activated");
         });
         $world.appendChild($floor);
     });
 
-    function renderElevatorButtons(states) {
+    function renderButtons(states) {
         // This is a rarely executed inner-inner loop, does not need efficiency
         return _.map(states, function(b, i) {
-            return riot.render(elevatorButtonTempl, {floorNum: i});
+            return riot.render(buttonTempl, {floorNum: i});
         }).join("");
     };
 
@@ -100,7 +99,7 @@ function presentWorld($world, world, floorTempl, elevatorTempl, elevatorButtonTe
         var $elevator = document.createElement("span");
         $elevator.innerHTML = riot.render(elevatorTempl, {e: e});
         $elevator = $elevator.childNodes[0];
-        $elevator.querySelector(".buttonindicator").innerHTML = renderElevatorButtons(e.buttonStates);
+        $elevator.querySelector(".buttonindicator").innerHTML = renderButtons(e.buttonStates);
         var $buttons = $elevator.querySelector(".buttonindicator").childNodes;
         var elem_floorindicator = $elevator.querySelector(".floorindicator > span");
 

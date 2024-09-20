@@ -25,7 +25,8 @@
             <h2>About the game</h2>
             <p>
                 This is a game of programming!<br>
-                Your task is to program the movement of elevators, by writing a program in <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide">JavaScript</a>.
+                Your task is to program the movement of elevators, by writing a program in <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide">JavaScript</a>.<br>
+                This version is based on <span class="emphasis-color">destination dispatch</span> mode.
             </p>
             <p>
                 The goal is to transport people in an efficient manner.
@@ -80,8 +81,8 @@
                     <dd>Listen for the "idle" event issued by the elevator, when the task queue has been emptied and the elevator is doing nothing. In this example we tell it to move to floor 0.</dd>
                 <dt><pre><code>elevator.on("floor_button_pressed", function(floorNum) { ... } );</code></pre></dt>
                     <dd>Listen for the "floor_button_pressed" event, issued when a passenger pressed a button inside the elevator. This indicates that the passenger wants to go to that floor.</dd>
-                <dt><pre><code>floor.on("up_button_pressed", function() { ... } );</code></pre></dt>
-                    <dd>Listen for the "up_button_pressed" event, issued when a passenger pressed the up button on the floor they are waiting on. This indicates that the passenger wants to go to another floor.</dd>
+                <dt><pre><code>floor.on("call_button_pressed", function(destinationFloor) { ... } );</code></pre></dt>
+                    <dd>Listen for the "call_button_pressed" event, issued when a passenger pressed the call button on the floor they are waiting on. This indicates that the passenger wants to go to another floor.</dd>
             </dl>
 
             <h2 id="docs">API documentation</h2>
@@ -105,6 +106,9 @@
 }</code></pre></td></tr>
                     <tr><td>directionalIndicators</td><td>Boolean array</td><td><small>Get or set the going up indicator (index 0) or going down indicator (index 1), which will affect passenger behaviour when stopping at floors. Note that indicator changes are visually updated only when the elevator starts or stops.</small></td><td><pre><code>if(elevator.directionalIndicators[0]) {
     elevator.directionalIndicators[1] = false;
+}</code></pre></td></tr>
+                    <tr><td>serviceStates</td><td>Boolean array</td><td><small>Get or set serviced floors in one-to-one correspondence. Passenger will enter the elevator only when the corresponding flag is true.</small></td><td><pre><code>if(elevator.serviceStates[0]) {
+    // This elevator is suitable for passengers going to floor 0
 }</code></pre></td></tr>
                     <tr><td>maxUsers</td><td>Number</td><td><small>Get the maximum number of passengers that can occupy the elevator at the same time.</small></td><td><pre><code>if(elevator.maxUsers >= 8) {
     // Use this elevator for something special, because it's big
@@ -148,18 +152,18 @@ elevator.checkDestinationQueue();</code></pre></td></tr>
                 <thead><th>Property</th><th>Type</th><th>Explanation</th><th>Example</th></thead>
                 <tbody>
                     <tr><td>level</td><td>Number</td><td><small>Get the floor number of the floor object.</small></td><td><pre><code>if(floor.level > 3) { ... }</code></pre></td></tr>
-                    <tr><td>buttonStates</td><td>Boolean array</td><td><small>Get button states, which include the up button (index 0) or down button (index 1), of specified floor.</small></td><td><pre><code>if(floor.buttonStates[0]) {
-    // Maybe call an elevator to pick up?
+                    <tr><td>buttonStates</td><td>Boolean array</td><td><small>Get call button states, in one-to-one correspondence, of specified floor.</small></td><td><pre><code>if(floor.buttonStates[0]) {
+    // Maybe call an elevator to pick up, then go to floor 0?
 }</code></pre></td></tr>
-                    <tr><td>pressButton</td><td>Function</td><td><small>Press the button on specified floor. A positive number means up, and a negative one means down. Note that you normally don't need to manually press buttons - it is needed only for testing.</small></td><td><pre><code>floor.pressButton(1);
-// Should trigger up_button_pressed event for valid pressing</code></pre></td></tr>
+                    <tr><td>pressButton</td><td>Function</td><td><small>Press the specified call button on the floor. Note that you normally don't need to manually press buttons - it is needed only for testing.</small></td><td><pre><code>floor.pressButton(1);
+// Should trigger call_button_pressed event for valid pressing</code></pre></td></tr>
                 </tbody>
             </table>
             <table class="doctable">
                 <thead><th>Event</th><th>Explanation</th><th>Example</th></thead>
                 <tbody>
-                    <tr><td>up_button_pressed<br>down_button_pressed</td><td><small>Triggered when someone has pressed the up (down) button at a floor. Note that passengers will press the button again if they fail to enter an elevator.</small></td><td><pre><code>floor.on("up_button_pressed down_button_pressed", function() {
-    // Maybe call an elevator to go to this floor?
+                    <tr><td>call_button_pressed</td><td><small>Triggered when someone has pressed a (destination) call button at a floor. Note that passengers will press the button again if they fail to enter an elevator.</small></td><td><pre><code>floor.on("call_button_pressed", function(destinationFloor) {
+    // Maybe call an elevator to go to this floor, then go to destination floor?
 })</code></pre></td></tr>
                 </tbody>
             </table>

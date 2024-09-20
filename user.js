@@ -23,7 +23,7 @@ User.prototype.appearOnFloor = function(floor, destinationFloorNum) {
 };
 
 User.prototype.pressFloorButton = function(floor) {
-    floor.pressButton(this.destinationFloor - this.currentFloor);
+    floor.pressButton(this.destinationFloor);
 };
 
 User.prototype.handleExit = function(floorNum, elevator) {
@@ -62,10 +62,9 @@ User.prototype.elevatorAvailable = function(elevator, floor) {
         // Success
         this.setParent(elevator);
         this.trigger("entered_elevator", elevator);
+        elevator.pressFloorButton(this.destinationFloor);
         var self = this;
-        this.moveToOverTime(pos[0], pos[1], 1, undefined, function() {
-            elevator.pressFloorButton(self.destinationFloor);
-        });
+        this.moveToOverTime(pos[0], pos[1], 1);
         this.exitAvailableHandler = function (floorNum, elevator) { self.handleExit(elevator.currentFloor, elevator); };
         elevator.on("exit_available", this.exitAvailableHandler);
     } else {

@@ -57,9 +57,9 @@
         // First blow through the allocation system to make first test more predictable..
         for(var i=1000; i>0; i--) {
             var m = new Movable();
-            var e = new Elevator(1.5, 40, 50);
+            var f = new Floor({});
+            var e = new Elevator(1.5, [f]);
             var u = new User(80);
-            var f = new Floor({}, 0, 0);
         }
 
         var measure = function(name, numIterations, fn) {
@@ -73,8 +73,8 @@
         };
 
         document.querySelector("#results_movable h4").innerHTML = measure("Creation", 1000000, function() { var m = new Movable() });
-        document.querySelector("#results_elevator h4").innerHTML = measure("Creation", 1000000, function() { var e = new Elevator(1.5, 40, 50) });
-        document.querySelector("#results_user h4").innerHTML = measure("Creation", 1000000, function() { var u = new User(10, 10, 40) });
-        document.querySelector("#results_floor h4").innerHTML = measure("Creation", 1000000, function() { var u = new Floor({}, 0, 0) });
+        document.querySelector("#results_floor h4").innerHTML = measure("Creation", 1000000, function() { var f = new Floor({}) });
+        document.querySelector("#results_elevator h4").innerHTML = measure("Creation", 1000000, function() { var e = new Elevator(1.5, [f]) });
+        document.querySelector("#results_user h4").innerHTML = measure("Creation", 1000000, function() { var u = new User(80) });
     </script>
 </body>

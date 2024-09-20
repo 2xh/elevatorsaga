@@ -8,7 +8,7 @@ function Elevator(speedFloorsPerSec, floors, maxUsers, errorHandler) {
     var elevator = this;
 
     elevator.floors = floors;
-    elevator.height = floors.reduce(function(h, floor){ return Math.min(h, floor.height); }, floors[0].height);
+    elevator.height = _.reduce(floors, function(h, floor){ return Math.min(h, floor.height); }, floors[0].height);
     elevator.maxSpeed = elevator.height * speedFloorsPerSec;
     elevator.ACCELERATION = elevator.height * Math.max(Math.log(speedFloorsPerSec) / Math.LN2, 3);
     elevator.DECELERATION = elevator.ACCELERATION * 1.25;
@@ -22,13 +22,14 @@ function Elevator(speedFloorsPerSec, floors, maxUsers, errorHandler) {
     elevator.destinationQueue = [];
 
     elevator.approachedFloor = elevator.currentFloor;
-    elevator.buttonStates = _.map(_.range(elevator.floors.length), function(e, i){ return false; });
+    elevator.buttonStates = _.fill(new Array(floors.length), false);
+    elevator.serviceStates = _.fill(new Array(floors.length), true);
     elevator.moveCount = 0;
     elevator.removed = false;
     elevator.userSlots = _.map(_.range(elevator.maxUsers), function(user, i) {
         return { pos: [(i * 8) - 4, elevator.height - 22], user: null};
     });
-    elevator.width = elevator.maxUsers * 9;
+    elevator.width = elevator.maxUsers * 8 + 6;
     elevator.destinationY = 0.0;
 
     elevator.tryTrigger = function(event, arg1, arg2, arg3, arg4) {
@@ -201,6 +202,7 @@ Elevator.prototype.checkDestinationQueue = function() {
 };
 
 Elevator.prototype.isSuitableForTravelBetween = function(fromFloorNum, toFloorNum) {
+    if(!this.serviceStates[toFloorNum]) { return false; }
     var direction = toFloorNum - fromFloorNum;
     if(direction > 0) {
         return this.directionalIndicators[0];

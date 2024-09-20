@@ -262,11 +262,11 @@ describe("Elevator Saga", function() {
 		it("correctly reports travel suitability", function() {
 			e.directionalIndicators = [true, true];
 			expect(e.isSuitableForTravelBetween(0, 1)).toBe(true);
-			expect(e.isSuitableForTravelBetween(2, 4)).toBe(true);
+			expect(e.isSuitableForTravelBetween(2, 6)).toBe(false);
 			expect(e.isSuitableForTravelBetween(5, 3)).toBe(true);
 			expect(e.isSuitableForTravelBetween(2, 0)).toBe(true);
 			e.directionalIndicators = [false, true];
-			expect(e.isSuitableForTravelBetween(1, 10)).toBe(false);
+			expect(e.isSuitableForTravelBetween(1, 4)).toBe(false);
 			e.directionalIndicators = [true, false];
 			expect(e.isSuitableForTravelBetween(20, 0)).toBe(false);
 		});

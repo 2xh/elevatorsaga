@@ -39,10 +39,7 @@
     <script type="text/template" id="floor-template">
         <div class="floor" style="top: {yPosition}px; height: {height}px">
             <span class="floornumber">{level}</span>
-            <span class="buttonindicator">
-                <span class="up"></span>
-                <span class="down"></span>
-            </span>
+            <span class="buttonindicator"></span>
         </div>
     </script>
 
@@ -55,13 +52,13 @@
         </div>
     </script>
 
-    <script type="text/template" id="elevatorbutton-template">
+    <script type="text/template" id="button-template">
         <span class="buttonpress">{floorNum}</span>
     </script>
 
     <script type="text/template" id="feedback-template">
         <div class="feedback">
-            <h2 style="margin: auto; padding-top: 0.4em">{title}</h2>
+            <h2 style="margin: auto">{title}</h2>
             <p>{message}</p>
             <a href="{url}">Next challenge <span class="blink">▶</span></a>
         </div>
@@ -116,11 +113,11 @@
         this.preferChoices = function(elevator){
             var otherElevators = elevators.filter(function(Elevator){return Elevator !== elevator});
             var gotoChoices = floors.filter(function(floor, floorNum){
-                return (floor.buttonStates[0] || floor.buttonStates[1]) && !otherElevators.some(function(otherElevator){
+                return (floor.hasUpCall() || floor.hasDownCall()) && !otherElevators.some(function(otherElevator){
                     return Math.abs(floorNum - (otherElevator.destinationQueue[0] || otherElevator.getExactCurrentFloor())) < Math.abs(floorNum - elevator.getExactCurrentFloor())
                     && ((otherElevator.destinationQueue == floorNum || !otherElevator.destinationQueue.length) || !otherElevator.isFull()
-                        && (!floor.buttonStates[0] || otherElevator.directionalIndicators[0] && otherElevator.getExactFutureFloorIfStopped() <= floorNum)
-                        && (!floor.buttonStates[1] || otherElevator.directionalIndicators[1] && otherElevator.getExactFutureFloorIfStopped() >= floorNum));
+                        && (!floor.hasUpCall() || otherElevator.directionalIndicators[0] && otherElevator.getExactFutureFloorIfStopped() <= floorNum)
+                        && (!floor.hasDownCall() || otherElevator.directionalIndicators[1] && otherElevator.getExactFutureFloorIfStopped() >= floorNum));
                 });
             }).map(function(floor){return floor.level});
             return gotoChoices.sort(function(gotoChoice1, gotoChoice2){
@@ -180,27 +177,27 @@
         };
         elevators.forEach(function(elevator, index){
             elevator.on("stopped_at_floor", function(floorNum){
-                if(elevator.directionalIndicators[0] && (floors[floorNum].buttonStates[0] || elevator.destinationQueue[0] > floorNum)
-                   || elevator.directionalIndicators[1] && (floors[floorNum].buttonStates[1] || elevator.destinationQueue[0] < floorNum)) {
+                if(elevator.directionalIndicators[0] && (floors[floorNum].hasUpCall() || elevator.destinationQueue[0] > floorNum)
+                   || elevator.directionalIndicators[1] && (floors[floorNum].hasDownCall() || elevator.destinationQueue[0] < floorNum)) {
                     return;
                 }
-                if(floors[floorNum].buttonStates[0] && that.preferChoices(elevator)[0] < floorNum
-                   || floors[floorNum].buttonStates[1] && that.preferChoices(elevator)[0] > floorNum) {
+                if(floors[floorNum].hasUpCall() && that.preferChoices(elevator)[0] < floorNum
+                   || floors[floorNum].hasDownCall() && that.preferChoices(elevator)[0] > floorNum) {
                     if(!that.clearConditionIsMoves) {
                         elevators.filter(function(Elevator){return !Elevator.destinationQueue.length && Elevator.isEmpty()})
                             .forEach(function(Elevator){that.updateDestination(Elevator, that.preferChoices(Elevator)[0])});
                     }
                 } else if(elevator.destinationQueue.length) {
                     that.updateDirection(elevator);
-                } else if(floors[floorNum].buttonStates[0] || floors[floorNum].buttonStates[1]) {
-                    elevator.directionalIndicators = [floors[floorNum].buttonStates[0], floors[floorNum].buttonStates[1]];
+                } else if(floors[floorNum].hasUpCall() || floors[floorNum].hasDownCall()) {
+                    elevator.directionalIndicators = [floors[floorNum].hasUpCall(), floors[floorNum].hasDownCall()];
                 }
             });
             elevator.on("passing_floor", function(floorNum, direction){
                 var isOtherElevetorStop = elevators.some(function(elevatorGoFloor){
                     return elevatorGoFloor.destinationQueue[0] === floorNum && (direction > 0 && elevatorGoFloor.directionalIndicators[0] || direction < 0 && elevatorGoFloor.directionalIndicators[1]);
                 });
-                if(floors[floorNum].buttonStates[direction > 0 ? 0 : 1] && !elevator.isFull() && !isOtherElevetorStop) {
+                if(floors[floorNum][direction > 0 ? "hasUpCall" : "hasDownCall"]() && !elevator.isFull() && !isOtherElevetorStop) {
                     elevator.goToFloor(floorNum);
                     if(!that.clearConditionIsMoves && !elevator.getPressedFloors().length) {
                         elevators.filter(function(Elevator){return !Elevator.destinationQueue.length && Elevator.isEmpty()})
@@ -220,7 +217,23 @@
             });
         });
         floors.forEach(function(floor, floorNum){
-            floor.on("up_button_pressed down_button_pressed", function(){
+            floor.hasUpCall = function(){
+                for(var i = floor.level; i < floor.buttonStates.length; ++i) {
+                    if(floor.buttonStates[i]) {
+                        return true;
+                    }
+                }
+                return false;
+            };
+            floor.hasDownCall = function(){
+                for(var i = floor.level; i >= 0; --i) {
+                    if(floor.buttonStates[i]) {
+                        return true;
+                    }
+                }
+                return false;
+            };
+            floor.on("call_button_pressed", function(){
                 elevators.filter(function(elevator){return !elevator.destinationQueue.length && elevator.isEmpty()}).forEach(function(elevator){that.updateDestination(elevator, that.preferChoices(elevator)[0])});
             });
         });
@@ -279,7 +292,7 @@
         </div>
         <div class="footer">
             <h4>Originally made by Magnus Wolffelt and modified</h4>
-            <h4>Version <span class="emphasis-color">1.7.2</span></h4>
+            <h4>Version <span class="emphasis-color">1.8.0</span></h4>
             <h4><a href="https://github.com/2xh/elevatorsaga">Source code</a> on GitHub</h4>
             <h4><a href="SpecRunner.html">Run tests</a></h4>
         </div>

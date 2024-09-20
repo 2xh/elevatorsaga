@@ -181,7 +181,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     var floorTempl = document.getElementById("floor-template").innerHTML.trim();
     var elevatorTempl = document.getElementById("elevator-template").innerHTML.trim();
-    var elevatorButtonTempl = document.getElementById("elevatorbutton-template").innerHTML.trim();
+    var buttonTempl = document.getElementById("button-template").innerHTML.trim();
     var userTempl = document.getElementById("user-template").innerHTML.trim();
     var challengeTempl = document.getElementById("challenge-template").innerHTML.trim();
     var feedbackTempl = document.getElementById("feedback-template").innerHTML.trim();
@@ -217,7 +217,7 @@ document.addEventListener("DOMContentLoaded", function() {
         app.currentChallengeIndex = challengeIndex;
         if(!challenges[challengeIndex]) {
             var ch;
-            if(!(ch = prompt("Challenge " + (challengeIndex + 1) + " not found, input options in JSON format to create one:"))) { return; }
+            if(!(ch = prompt("Challenge " + (challengeIndex + 1) + " not found, input options in JSON format to create one:", ""))) { return; }
             try {
                 challenges[challengeIndex] = {options: JSON.parse(ch), condition: requireNothing()};
             } catch(e) {
@@ -231,7 +231,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         presentStats($stats, app.world);
         presentChallenge($challenge, challenges[challengeIndex], app, app.world, app.worldController, challengeIndex + 1, challengeTempl);
-        presentWorld($world, app.world, floorTempl, elevatorTempl, elevatorButtonTempl, userTempl);
+        presentWorld($world, app.world, floorTempl, elevatorTempl, buttonTempl, userTempl);
 
         app.worldController.on("timescale_changed", function() {
             try {

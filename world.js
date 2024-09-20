@@ -6,7 +6,7 @@ var createWorldCreator = function() {
     creator.createFloors = function(floorCount, floorHeights, errorHandler) {
         var floors = [], yPos = 0;
         for(var f = floorCount - 1; f >= 0; f--) {
-            floors.unshift(Floor({}, f, yPos, floorHeights[f % floorHeights.length], errorHandler));
+            floors.unshift(Floor({}, f, yPos, floorCount, floorHeights[f % floorHeights.length], errorHandler));
             yPos += floors[0].height;
         }
         return floors;
@@ -79,7 +79,7 @@ var createWorldCreator = function() {
         }
 
         world.floors = creator.createFloors(options.floorCount, options.floorHeights, handleUserCodeError);
-        world.floors.totalHeight = world.floors.reduce(function(h, floor){ return h + floor.height; }, 0);
+        world.floors.totalHeight = _.reduce(world.floors, function(h, floor){ return h + floor.height; }, 0);
         world.elevators = creator.createElevators(options.elevatorCount, world.floors, options.elevatorCapacities, options.elevatorSpeeds, options.startFloors, handleUserCodeError);
         world.users = [];
         world.transportedCounter = 0;
@@ -127,29 +127,26 @@ var createWorldCreator = function() {
             world.elevators[i].on("entrance_available", handleElevAvailability);
         }
 
-        var handleButtonRepressing = function(eventName, floor) {
-            for(var i=0, len=world.elevators.length; i < len; ++i) {
-                var elevator = world.elevators[i];
-                if( eventName === "up_button_pressed" && elevator.directionalIndicators[0] ||
-                    eventName === "down_button_pressed" && elevator.directionalIndicators[1]) {
-
-                    // Elevator is heading in correct direction, check for suitability
-                    if(elevator.currentFloor === floor.level && elevator.isOnAFloor() && !elevator.isMoving && !elevator.isFull()) {
-                        // Potentially suitable to get into
-                        if(elevator.currentTask) {
-                            elevator.currentTask(null);
-                        }
-                        elevator.moveToFloor(floor.level);
-                        return;
-                    }
-                }
-            }
-        }
-
         // This will cause elevators to "re-arrive" at floors if someone presses an
         // appropriate button on the floor before the elevator has left.
-        for(var i=0; i<world.floors.length; ++i) {
-            world.floors[i].on("up_button_pressed down_button_pressed", handleButtonRepressing);
+        for(var i=0; i < world.floors.length; ++i) {
+            world.floors[i].on("call_button_pressed", function(floor) {
+                for(var i=0, len=world.elevators.length; i < len; ++i) {
+                    var elevator = world.elevators[i];
+                    if(elevator.isSuitableForTravelBetween(this.level, floor)) {
+
+                        // Elevator is heading in correct direction, check for suitability
+                        if(elevator.currentFloor === this.level && elevator.isOnAFloor() && !elevator.isMoving && !elevator.isFull()) {
+                            // Potentially suitable to get into
+                            if(elevator.currentTask) {
+                                elevator.currentTask(null);
+                            }
+                            elevator.moveToFloor(this.level);
+                            return;
+                        }
+                    }
+                }
+            });
         };
 
         var elapsedSinceSpawn = 1.0/options.spawnRate;
