@@ -67,23 +67,22 @@ function doFitnessSuite(codeStr, runCount, time, step) {
     step = step || 1000.0/60.0;
     var error = null;
 
-    var testruns = [];
-    _.times(runCount, function() {
+    var testruns = _.times(runCount, function() {
         var results = _.map(fitnessChallenges, function(challenge) {
             var fitness = calculateFitness(challenge, codeObj, step, time);
             if(fitness.error) { error = fitness.error; return };
             return { options: challenge.options, result: fitness }
         });
         if(error) { return; }
-        testruns.push(results);
+        return results;
     });
     if(error) {
         return { error: error.toString() }
     }
 
     // Now do averaging over all properties for each challenge's test runs
-    var averagedResults = _.map(_.range(testruns[0].length), function(n) { return makeAverageResult(_.pluck(testruns, n)) });
-    
+    var averagedResults = _.times(testruns[0].length, function(n) { return makeAverageResult(_.pluck(testruns, n)) });
+
     return averagedResults;
 };
 
@@ -95,7 +94,8 @@ function fitnessSuite(codeStr, preferWorker, callback) {
             fitnessSuite(codeStr, false, callback);
         };
         try {
-            var w = new Worker("fitnessworker.js");
+            fitnessSuite.w = fitnessSuite.w || new Worker("fitnessworker.js");
+            var w = fitnessSuite.w;
             w.onerror = errHandler;
             w.onmessage = function(msg) {
                 console.log("Got message from fitness worker", msg);

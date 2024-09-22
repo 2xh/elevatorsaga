@@ -217,7 +217,7 @@ document.addEventListener("DOMContentLoaded", function() {
         app.currentChallengeIndex = challengeIndex;
         if(!challenges[challengeIndex]) {
             var ch;
-            if(!(ch = prompt("Challenge " + (challengeIndex + 1) + " not found, input options in JSON format to create one:", ""))) { return; }
+            if(!(ch = prompt("Challenge #" + (challengeIndex + 1) + " not found, input options in JSON format to create one:", ""))) { return; }
             try {
                 challenges[challengeIndex] = {options: JSON.parse(ch), condition: requireNothing()};
             } catch(e) {

@@ -26,10 +26,10 @@ function Elevator(speedFloorsPerSec, floors, maxUsers, errorHandler) {
     elevator.serviceStates = _.fill(new Array(floors.length), true);
     elevator.moveCount = 0;
     elevator.removed = false;
-    elevator.userSlots = _.map(_.range(elevator.maxUsers), function(user, i) {
+    elevator.userSlots = _.times(elevator.maxUsers, function(i) {
         return { pos: [(i * 8) - 4, elevator.height - 22], user: null};
     });
-    elevator.width = elevator.maxUsers * 8 + 6;
+    elevator.width = elevator.maxUsers * 8 + 4;
     elevator.destinationY = 0.0;
 
     elevator.tryTrigger = function(event, arg1, arg2, arg3, arg4) {

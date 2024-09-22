@@ -49,7 +49,7 @@ function presentChallenge($parent, challenge, app, world, worldController, chall
     });
     $parent.querySelector(".startstop").addEventListener("contextmenu", function(e) {
         e.preventDefault();
-        document.querySelector("#save_message").textContent = "Current challenge options:\n" + JSON.stringify(challenge.options);
+        document.querySelector("#fitness_message").textContent = "Challenge #" + challengeNum + " options:\n" + JSON.stringify(challenge.options);
     });
     $parent.querySelector(".timescale_increase").addEventListener("click", function(e) {
         worldController.setTimeScale(Math.round(worldController.timeScale * 2));

@@ -17,7 +17,7 @@ var createWorldCreator = function() {
         elevatorSpeeds = elevatorSpeeds || [3];
         startFloors = startFloors || [0];
         var currentX = 160.0;
-        var elevators = _.map(_.range(elevatorCount), function(e, i) {
+        var elevators = _.times(elevatorCount, function(i) {
             var elevator = new Elevator(elevatorSpeeds[i%elevatorSpeeds.length], floors, elevatorCapacities[i%elevatorCapacities.length], errorHandler);
 
             // Move to right x position
