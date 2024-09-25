@@ -1,6 +1,6 @@
 Elevator Saga
 ===================
-The elevator programming game
+The elevator programming game, now with destination dispatch!
 
 [Play it now!](http://2xh.github.io/elevatorsaga/)
 

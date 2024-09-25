@@ -273,7 +273,7 @@ document.addEventListener("DOMContentLoaded", function() {
     var prepareChallenge = function() {
         var path = location.hash;
         params = _.reduce(path.split(","), function(result, p) {
-            var match = p.match(/(\w+)=(\w+$)/);
+            var match = p.match(/^#?(.+)=(.+)/);
             if(match) { result[match[1].toLowerCase()] = match[2].toLowerCase(); } return result;
         }, {});
         var requestedChallenge = 0;
@@ -285,23 +285,32 @@ document.addEventListener("DOMContentLoaded", function() {
             var timeScale = 1.0;
         }
         _.each(params, function(val, key) {
+            var boolValue = !(val === "false" || val === "0" || val === "null");
             if(key === "challenge") {
-                requestedChallenge = _.parseInt(val) - 1;
-                if(requestedChallenge < 0) {
-                    console.log("Invalid challenge index:", requestedChallenge);
-                    console.log("Defaulting to last challenge");
-                    requestedChallenge = challenges.length - 1;
-                } else if(requestedChallenge > challenges.length) {
+                requestedChallenge = _.parseInt(val);
+                if(requestedChallenge > 0) {
+                    requestedChallenge--;
+                } else {
+                    console.log("Negative challenge number:", requestedChallenge);
+                    if(challenges.length + requestedChallenge >= 0) {
+                        requestedChallenge = challenges.length + requestedChallenge;
+                        console.log("Redirecting to corresponding challenge:", requestedChallenge);
+                    } else {
+                        requestedChallenge = 0;
+                        console.log("Defaulting to first challenge:", requestedChallenge);
+                    }
+                }
+                if(requestedChallenge >= challenges.length) {
                     console.log("No such challenge:", requestedChallenge);
                 }
             } else if(key === "autostart") {
-                autoStart = !(val === "false" || val === "0" || val === "null");
+                autoStart = boolValue;
             } else if(key === "timescale") {
                 timeScale = parseFloat(val);
             } else if(key === "devtest") {
-                editor.setDevTestCode();
+                if(boolValue) { editor.setDevTestCode(); }
             } else if(key === "fullscreen") {
-                makeDemoFullscreen(!(val === "false" || val === "0" || val === "null"));
+                makeDemoFullscreen(boolValue);
             }
         });
         app.worldController.setTimeScale(timeScale);
